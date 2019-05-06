@@ -3,14 +3,18 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "meteor test --once --driver-package meteortesting:mocha"
+    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "postinstall": "./postinstall.sh"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
+    "@fortawesome/fontawesome": "^1.1.8",
+    "@fortawesome/fontawesome-free": "^5.8.1",
     "bootstrap": "^4.3.1",
     "jquery": "^3.4.1",
     "meteor-node-stubs": "^0.4.1",
-    "popper.js": "^1.15.0"
+    "popper.js": "^1.15.0",
+    "startbootstrap-sb-admin-2": "^4.0.3"
   },
   "devDependencies": {
     "chai": "^4.1.2"
