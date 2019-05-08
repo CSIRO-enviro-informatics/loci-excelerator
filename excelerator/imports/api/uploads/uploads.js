@@ -5,6 +5,7 @@ const config = {
     collectionName: 'Uploads',
     allowClientCode: false, // Disallow remove files from Client
     onBeforeUpload(file) {
+        return true;
         // Allow upload files under 10MB, and only in csv formats
         if (file.size <= Meteor.settings.public.uploads.maxSize && /csv/i.test(file.extension)) {
             return true;
