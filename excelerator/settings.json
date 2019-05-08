@@ -1,9 +1,10 @@
 {
     "public": {
-        "siteName": "Excelerator"
-    },
-    "uploads": {
-        "maxSize": 10485760,
-        "maxSizeText": "10MB"
+        "siteName": "Excelerator",
+        "uploads": {
+            "maxSize": 10485760,
+            "maxSizeText": "10MB",
+            "path": "/loci/data/uploads"
+        }
     }
 }
