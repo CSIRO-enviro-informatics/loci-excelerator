@@ -22,7 +22,12 @@
                 </label>
             {{/each}}
         </div>
+        {{/if}}
 
+        {{#if canSubmit}}
+        <div>
+            <button type="button" class="btn btn-success">Convert</button>
+        </div>
         {{/if}}
     {{/if}}
 </template>

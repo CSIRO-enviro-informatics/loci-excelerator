@@ -41,7 +41,7 @@ Template.jobCreator.helpers({
         return App.selectedFile.get();
     },
     datasets() {
-        return Datasets.find();
+        return Datasets.find({}, { sort: { title: 1 } });
     },
     isInputActive() {
         var params = App.selectedFileJobParams.get();
@@ -67,6 +67,10 @@ Template.jobCreator.helpers({
             })
             return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } });
         }
+    },
+    canSubmit() {
+        var params = App.selectedFileJobParams.get();
+        return params && params.inputUri && params.outputUri;
     }
 });
 
@@ -82,5 +86,4 @@ Template.jobCreator.events({
         params.outputUri = this.uri;
         App.selectedFileJobParams.set(params);
     }
-
 });
