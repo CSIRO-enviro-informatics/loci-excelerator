@@ -30,6 +30,14 @@ Template.fileDetails.helpers({
     cells: function () {
         var row = this;
         return row.map((val) => ({ val }));
+    },
+    filename: function () {
+        var file = App.selectedFile.get();
+        return file && file.name;
+    },
+    size: function() {
+        var file = App.selectedFile.get();
+        return file && App.humanFileSize(file.size);
     }
 })
 

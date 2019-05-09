@@ -7,7 +7,7 @@ import { App } from '../../../core.js'
 
 import '../uploadForm/uploadForm'
 
-Template.jobCreator.onCreated(function helloOnCreated() {
+Template.jobCreator.onCreated(function() {
 });
 
 Template.jobCreator.helpers({
@@ -16,12 +16,8 @@ Template.jobCreator.helpers({
     },
     showFileDetails() {
         return App.selectedFile.get();
-    }
+    },
 });
 
 Template.jobCreator.events({
-    'click button'(event, instance) {
-        // increment the counter when button is clicked
-        instance.counter.set(instance.counter.get() + 1);
-    },
 });

@@ -1,17 +1,25 @@
 <template name="fileDetails">
     <div>
-        {{#if rows}}
-            <table class="file-details table table-sm table-bordered">
-                <tbody>
-                    {{#each rows}}
+        <h3>
+            <i class="fas fa-file-csv"></i>
+            {{filename}}
+        </h3>
+        <div>{{size}}</div>
+        <br />
+        {{#if rows}}            
+            <div class="table-container">
+                <table class="file-details table table-sm table-bordered">
+                    <tbody>
+                        {{#each rows}}
                         <tr>
                             {{#each cells}}
-                                <td>{{val}}</td>
+                            <td>{{val}}</td>
                             {{/each}}
                         </tr>
-                    {{/each}}
-                </tbody>
-            </table>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
         {{/if}}
     </div>
 </template>
