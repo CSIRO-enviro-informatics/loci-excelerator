@@ -1,0 +1,17 @@
+<template name="fileDetails">
+    <div>
+        {{#if rows}}
+            <table class="file-details table table-sm table-bordered">
+                <tbody>
+                    {{#each rows}}
+                        <tr>
+                            {{#each cells}}
+                                <td>{{val}}</td>
+                            {{/each}}
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        {{/if}}
+    </div>
+</template>

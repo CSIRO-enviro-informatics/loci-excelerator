@@ -3,6 +3,7 @@
 import { ReactiveVar } from 'meteor/reactive-var';
 
 export const App = {
-    dataId: new ReactiveVar(null)
+    dataId: new ReactiveVar(null),
+    selectedFile: new ReactiveVar(null)
 }
 

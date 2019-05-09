@@ -8,4 +8,14 @@
     span {
         display: inline-block;
     }
-  }
+}
+
+.file-details {
+    font-size: 0.7rem;
+    td {
+        white-space: nowrap; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
+}

@@ -2,7 +2,7 @@ import './uploadForm.html';
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import Uploads from '../../../api/uploads/uploads'
-
+import { App } from '../../../core.js'
 
 Template.uploadForm.onCreated(function () {
     this.currentUpload = new ReactiveVar(false);
@@ -26,7 +26,7 @@ Template.uploadForm.events({
             e.preventDefault();
             e.stopPropagation();
             e.originalEvent.dataTransfer.dropEffect = 'copy';
-            uploadFiles(dataTransfer.files[0], t);
+            selectFile(dataTransfer.files[0]);
         }
     },
     "click #dropzone": function (e, t) {
@@ -35,10 +35,14 @@ Template.uploadForm.events({
     "change input[type=file]": function (e, t) {
         var files = e.target.files;
         if (files && files.length == 1) {
-            uploadFiles(files[0], t);
+            selectFile(files[0]);
         }
     }
 });
+
+function selectFile(file) {
+    App.selectedFile.set(file);
+}
 
 function uploadFiles(file, template) {
     const upload = Uploads.insert({
