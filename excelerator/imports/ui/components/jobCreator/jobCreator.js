@@ -12,6 +12,8 @@ import Uploads from '../../../api/uploads/uploads'
 import Jobs from '../../../api/jobs/jobs';
 
 window.Datasets = Datasets;
+window.Uploads = Uploads;
+window.Jobs = Jobs;
 
 var testFile = new File([`owner_name,wcode,station_no,short_name,long_name,spatial_reference_system,latitude,longitude,parameter,from,to
 Icon Water Limited,w00002,340000,Cotter U/S Stockyard,Cotter River upstream Stockyard Creek,WGS84 (3D),-35.4819,148.819,WaterCourseDischarge,2003-08-20 14:00:00,2012-02-29 14:00:00
@@ -40,7 +42,8 @@ Template.jobCreator.onCreated(function () {
     Meteor.subscribe('linksets.all');
     Meteor.subscribe("jobs.all");
     Tracker.autorun(function () {
-        Meteor.subscribe("jobs.id", App.dataId.get())
+        Meteor.subscribe("jobs.id", App.dataId.get());
+        Meteor.subscribe('uploads.user', App.dataId.get());
     })
 });
 
@@ -89,7 +92,13 @@ Template.jobCreator.helpers({
     currentJob() {
         var jobId = Template.instance().currentJobId.get();
         return Jobs.findOne({ _id: jobId });
-    }
+    },
+    outputfile() {
+        var jobId = Template.instance().currentJobId.get();
+        var job = Jobs.findOne({ _id: jobId });
+        var result = job.result;
+        return Uploads.findOne({_id: result.fileId});
+    },
 });
 
 Template.jobCreator.events({
@@ -108,7 +117,6 @@ Template.jobCreator.events({
         var file = App.selectedFile.get();
         var params = App.selectedFileJobParams.get();
         var id = App.dataId.get();
-        var fileId = "";
 
         uploadFile(file, t, function (err, fileObj) {
             if (err) {
@@ -118,7 +126,7 @@ Template.jobCreator.events({
                     // email: "",
                     userId: id,
                     from: {
-                        fileId,
+                        fileId: fileObj._id,
                         datasetUri: params.inputUri,
                         columnIndex: 0
                     },
@@ -136,11 +144,14 @@ Template.jobCreator.events({
 });
 
 function uploadFile(file, template, cb) {
+    var id = App.dataId.get();
     const upload = Uploads.insert({
         file: file,
         streams: 'dynamic',
         chunkSize: 'dynamic',
-        onProgress: (progress) => console.log(progress),
+        meta: {
+            userId: id 
+        },
     }, false);
 
     upload.on('start', function () {

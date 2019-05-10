@@ -43,29 +43,3 @@ Template.uploadForm.events({
 function selectFile(file) {
     App.selectedFile.set(file);
 }
-
-function uploadFiles(file, template) {
-    const upload = Uploads.insert({
-        file: file,
-        streams: 'dynamic',
-        chunkSize: 'dynamic',
-        onProgress: (progress) => console.log(progress),
-    }, false);
-
-    upload.on('start', function () {
-        window.a = this;
-        console.log(this);
-        template.currentUpload.set(this);
-    });
-
-    upload.on('end', function (error, fileObj) {
-        if (error) {
-            alert('Error during upload: ' + error);
-        } else {
-            alert('File "' + fileObj.name + '" successfully uploaded');
-        }
-        template.currentUpload.set(false);
-    });
-
-    upload.start();
-}

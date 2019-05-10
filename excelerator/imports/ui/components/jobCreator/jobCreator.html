@@ -45,12 +45,19 @@
             Processing Job <b>{{_id}}</b>: ({{status}})
             <br>
             {{#if $eq status 'running' }}
-            <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
-                <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}" aria-valuemin="0"
-                    aria-valuemax="100" style="width: {{progress.percent}}%;">
-                    <span class="sr-only">{{progress.percent}}% Complete</span>
+                <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}" aria-valuemin="0"
+                        aria-valuemax="100" style="width: {{progress.percent}}%;">
+                        <span class="sr-only">{{progress.percent}}% Complete</span>
+                    </div>
                 </div>
-            </div>
+            {{/if}}
+            {{#if $eq status 'completed' }}
+                {{#with outputfile.with}}
+                <a href="{{link}}?download=true" download="{{name}}" target="_parent" type="{{type}}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                    <i class="fas fa-download fa-sm text-white-50"></i> Download
+                </a>
+                {{/with}}
             {{/if}}
         {{/with}}
 
