@@ -24,3 +24,5 @@ johanbrook:publication-collector  # Test a Meteor publication by collecting its 
 fourseven:scss
 seba:minifiers-autoprefixer
 ostrio:files
+vsivsi:job-collection
+raix:handlebar-helpers

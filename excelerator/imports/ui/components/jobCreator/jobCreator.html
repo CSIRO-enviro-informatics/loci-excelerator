@@ -14,20 +14,45 @@
         </div>
 
         {{#if availableOutputs}}
-        <h5>Available Output Datasets</h5>
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-            {{#each availableOutputs}}
-                <label class="output-dataset-btn btn btn-primary btn-sm {{isOutputActive}}">
-                    <input type="radio" name="outputsets" autocomplete="off" checked="">{{title}}
-                </label>
-            {{/each}}
-        </div>
+            <h5>Available Output Datasets</h5>
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                {{#each availableOutputs}}
+                    <label class="output-dataset-btn btn btn-primary btn-sm {{isOutputActive}}">
+                        <input type="radio" name="outputsets" autocomplete="off" checked="">{{title}}
+                    </label>
+                {{/each}}
+            </div>
         {{/if}}
 
         {{#if canSubmit}}
-        <div>
-            <button type="button" class="btn btn-success">Convert</button>
-        </div>
+            <div>
+                <button id="submitJob" type="button" class="btn btn-success">Convert</button>
+            </div>
         {{/if}}
+
+        {{#with currentUpload}}
+            Uploading <b>{{file.name}}</b>:
+            <br>
+            <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.get}}" aria-valuemin="0"
+                    aria-valuemax="100" style="width: {{progress.get}}%;">
+                    <span class="sr-only">{{progress.get}}% Complete</span>
+                </div>
+            </div>
+        {{/with}}
+
+        {{#with currentJob}}
+            Processing Job <b>{{_id}}</b>: ({{status}})
+            <br>
+            {{#if $eq status 'running' }}
+            <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}" aria-valuemin="0"
+                    aria-valuemax="100" style="width: {{progress.percent}}%;">
+                    <span class="sr-only">{{progress.percent}}% Complete</span>
+                </div>
+            </div>
+            {{/if}}
+        {{/with}}
+
     {{/if}}
 </template>

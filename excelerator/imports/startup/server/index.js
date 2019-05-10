@@ -2,3 +2,5 @@
 
 import './fixtures.js';
 import './register-api.js';
+import './job-manager.js';
+import './security.js'

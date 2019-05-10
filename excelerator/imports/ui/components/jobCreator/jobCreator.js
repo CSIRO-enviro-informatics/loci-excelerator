@@ -8,6 +8,8 @@ import { App } from '../../../core.js'
 import '../uploadForm/uploadForm'
 import Datasets from '../../../api/datasets/datasets';
 import Linksets from '../../../api/linksets/linksets';
+import Uploads from '../../../api/uploads/uploads'
+import Jobs from '../../../api/jobs/jobs';
 
 window.Datasets = Datasets;
 
@@ -29,8 +31,17 @@ Icon`], "testing file.csv");
 App.selectedFile.set(testFile);
 
 Template.jobCreator.onCreated(function () {
+    var tpl = this;
+
+    tpl.currentUpload = new ReactiveVar(false);
+    tpl.currentJobId = new ReactiveVar();
+
     Meteor.subscribe('datasets.all');
     Meteor.subscribe('linksets.all');
+    Meteor.subscribe("jobs.all");
+    Tracker.autorun(function () {
+        Meteor.subscribe("jobs.id", App.dataId.get())
+    })
 });
 
 Template.jobCreator.helpers({
@@ -71,6 +82,13 @@ Template.jobCreator.helpers({
     canSubmit() {
         var params = App.selectedFileJobParams.get();
         return params && params.inputUri && params.outputUri;
+    },
+    currentUpload() {
+        return Template.instance().currentUpload.get();
+    },
+    currentJob() {
+        var jobId = Template.instance().currentJobId.get();
+        return Jobs.findOne({ _id: jobId });
     }
 });
 
@@ -85,5 +103,54 @@ Template.jobCreator.events({
         var params = App.selectedFileJobParams.get();
         params.outputUri = this.uri;
         App.selectedFileJobParams.set(params);
+    },
+    'click #submitJob': function (e, t) {
+        var file = App.selectedFile.get();
+        var params = App.selectedFileJobParams.get();
+        var id = App.dataId.get();
+        var fileId = "";
+
+        uploadFile(file, t, function (err, fileObj) {
+            if (err) {
+                App.error(err);
+            } else {
+                var job = new Job(Jobs, 'convert', {
+                    // email: "",
+                    userId: id,
+                    from: {
+                        fileId,
+                        datasetUri: params.inputUri,
+                        columnIndex: 0
+                    },
+                    to: {
+                        datasetUri: params.outputUri,
+                        aggregationFunc: 'count'
+                    }
+                });
+                job.save((err, id) => {
+                    t.currentJobId.set(id);
+                });
+            }
+        })
     }
 });
+
+function uploadFile(file, template, cb) {
+    const upload = Uploads.insert({
+        file: file,
+        streams: 'dynamic',
+        chunkSize: 'dynamic',
+        onProgress: (progress) => console.log(progress),
+    }, false);
+
+    upload.on('start', function () {
+        template.currentUpload.set(this);
+    });
+
+    upload.on('end', function (error, fileObj) {
+        template.currentUpload.set(false);
+        cb(error, fileObj)
+    });
+
+    upload.start();
+}

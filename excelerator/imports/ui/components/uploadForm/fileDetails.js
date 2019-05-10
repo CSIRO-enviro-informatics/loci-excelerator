@@ -2,7 +2,7 @@ import './fileDetails.html'
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { App } from '../../../core'
-import Papa from 'papaparse'
+import Papa from 'papaparse';
 
 Template.fileDetails.onCreated( function () {
     var tpl = this;

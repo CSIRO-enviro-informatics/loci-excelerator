@@ -6,3 +6,5 @@ import '../../api/linksets/methods';
 import '../../api/linksets/server/publications.js';
 import '../../api/datasets/methods';
 import '../../api/datasets/server/publications.js';
+import '../../api/jobs/methods';
+import '../../api/jobs/server/publications.js';
