@@ -30,7 +30,7 @@ Icon Water Limited,w00002,410731,Gudgenby at Tennent,Gudgenby River at Tennent,W
 Icon Water Limited,w00002,410733,Condor at Threeways,Condor Creek at Threeways,WGS84 (3D),-35.3302,148.888,WaterCourseDischarge,1964-07-28 14:00:00,2019-04-15 14:00:00
 Icon`], "testing file.csv");
 
-App.selectedFile.set(testFile);
+// App.selectedFile.set(testFile);
 
 Template.jobCreator.onCreated(function () {
     var tpl = this;

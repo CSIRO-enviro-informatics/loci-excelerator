@@ -1,19 +1,11 @@
 <template name="uploadForm">
-    <div>
+    <div class="text-center">
+        <h1 class="display-4 text-dark">Data Converter</h1>
         <input type="file" style="visibility: hidden;" multiple />
-        <div id="dropzone" class="text-center">
-            {{#with currentUpload}}
-                Uploading <b>{{file.name}}</b>:
-                <br>
-                <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.get}}" aria-valuemin="0"
-                        aria-valuemax="100" style="width: {{progress.get}}%;">
-                        <span class="sr-only">{{progress.get}}% Complete</span>
-                    </div>
-                </div>
-            {{else}}
-                <span>Drop a compatible file here, or click to select one.</span>
-            {{/with}}
-        </div>
+        <p class="font-weight-light text-muted text-uppercase smaller">Select data files to convert or drag & drop</p>
+        <button id="dropzone" type="button" class="btn btn-primary w-100">
+            <span class="mx-4">From Computer</span>
+            <i class="fas fa-desktop fa-lg mr-4" style="position: relative;top: 2px;"></i>
+        </button>
     </div>
 </template>

@@ -1,65 +1,72 @@
 <template name="jobCreator">
-    {{#if showFileSelect}}
-        {{> uploadForm}}
-    {{/if}}
-    {{#if showFileDetails}}
-        {{> fileDetails}}
-        <h5>Input Loc-I Dataset Type</h5>
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-            {{#each datasets}}
-                <label class="input-dataset-btn btn btn-primary btn-sm {{isInputActive}}">
-                    <input type="radio" name="inputsets" autocomplete="off" checked="">{{title}}
-                </label>
-            {{/each}}
-        </div>
-
-        {{#if availableOutputs}}
-            <h5>Available Output Datasets</h5>
-            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                {{#each availableOutputs}}
-                    <label class="output-dataset-btn btn btn-primary btn-sm {{isOutputActive}}">
-                        <input type="radio" name="outputsets" autocomplete="off" checked="">{{title}}
-                    </label>
-                {{/each}}
-            </div>
-        {{/if}}
-
-        {{#if canSubmit}}
-            <div>
-                <button id="submitJob" type="button" class="btn btn-success">Convert</button>
-            </div>
-        {{/if}}
-
-        {{#with currentUpload}}
-            Uploading <b>{{file.name}}</b>:
-            <br>
-            <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
-                <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.get}}" aria-valuemin="0"
-                    aria-valuemax="100" style="width: {{progress.get}}%;">
-                    <span class="sr-only">{{progress.get}}% Complete</span>
+    <div class="container job-creator">
+        <div class="row h-100 align-items-center">
+            {{#if showFileSelect}}
+                <div class="offset-sm-3 col-sm-6">
+                    {{> uploadForm}}
                 </div>
-            </div>
-        {{/with}}
+            {{/if}}
+            {{#if showFileDetails}}
+                {{> fileDetails}}
+                <h5>Input Loc-I Dataset Type</h5>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    {{#each datasets}}
+                        <label class="input-dataset-btn btn btn-primary btn-sm {{isInputActive}}">
+                            <input type="radio" name="inputsets" autocomplete="off" checked="">{{title}}
+                        </label>
+                    {{/each}}
+                </div>
 
-        {{#with currentJob}}
-            Processing Job <b>{{_id}}</b>: ({{status}})
-            <br>
-            {{#if $eq status 'running' }}
-                <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}" aria-valuemin="0"
-                        aria-valuemax="100" style="width: {{progress.percent}}%;">
-                        <span class="sr-only">{{progress.percent}}% Complete</span>
+                {{#if availableOutputs}}
+                    <h5>Available Output Datasets</h5>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {{#each availableOutputs}}
+                            <label class="output-dataset-btn btn btn-primary btn-sm {{isOutputActive}}">
+                                <input type="radio" name="outputsets" autocomplete="off" checked="">{{title}}
+                            </label>
+                        {{/each}}
                     </div>
-                </div>
-            {{/if}}
-            {{#if $eq status 'completed' }}
-                {{#with outputfile.with}}
-                <a href="{{link}}?download=true" download="{{name}}" target="_parent" type="{{type}}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    <i class="fas fa-download fa-sm text-white-50"></i> Download
-                </a>
-                {{/with}}
-            {{/if}}
-        {{/with}}
+                {{/if}}
 
-    {{/if}}
+                {{#if canSubmit}}
+                    <div>
+                        <button id="submitJob" type="button" class="btn btn-success">Convert</button>
+                    </div>
+                {{/if}}
+
+                {{#with currentUpload}}
+                    Uploading <b>{{file.name}}</b>:
+                    <br>
+                    <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.get}}" aria-valuemin="0"
+                            aria-valuemax="100" style="width: {{progress.get}}%;">
+                            <span class="sr-only">{{progress.get}}% Complete</span>
+                        </div>
+                    </div>
+                {{/with}}
+
+                {{#with currentJob}}
+                    Processing Job <b>{{_id}}</b>: ({{status}})
+                    <br>
+                    {{#if $eq status 'running' }}
+                        <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}"
+                                aria-valuemin="0" aria-valuemax="100" style="width: {{progress.percent}}%;">
+                                <span class="sr-only">{{progress.percent}}% Complete</span>
+                            </div>
+                        </div>
+                    {{/if}}
+                    {{#if $eq status 'completed' }}
+                        {{#with outputfile.with}}
+                            <a href="{{link}}?download=true" download="{{name}}" target="_parent" type="{{type}}"
+                                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                                <i class="fas fa-download fa-sm text-white-50"></i> Download
+                            </a>
+                        {{/with}}
+                    {{/if}}
+                {{/with}}
+
+            {{/if}}
+        </div>
+    </div>
 </template>
