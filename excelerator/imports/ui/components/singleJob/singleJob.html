@@ -19,7 +19,8 @@
                     </button>
                     <div class="dropdown-menu">
                         {{#each datasets}}
-                            <a class="input-select dropdown-item {{isActive ../params.inputUri uri}}" href="#">{{title}}</a>
+                            <a class="input-select dropdown-item {{isActive ../params.inputUri uri}}"
+                                href="#">{{title}}</a>
                         {{/each}}
                     </div>
                 </div>
@@ -35,7 +36,11 @@
                             {{outputLabel}}
                         </span>
                     </button>
-                    <div class="dropdown-menu select-format">
+                    <div class="dropdown-menu">
+                        {{#each availableOutputs}}
+                            <a class="output-select dropdown-item {{isActive ../params.inputUri uri}}"
+                                href="#">{{title}}</a>
+                        {{/each}}
                     </div>
                 </div>
             </div>

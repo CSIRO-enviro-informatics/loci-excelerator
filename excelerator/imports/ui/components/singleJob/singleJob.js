@@ -82,10 +82,13 @@ Template.singleJob.events({
             }
         });
     },
-    'click .output-dataset-btn': function (e, t) {
-        var params = App.selectedFileJobParams.get();
-        params.outputUri = this.uri;
-        App.selectedFileJobParams.set(params);
+    'click .output-select': function (e, t) {
+        var build = Template.currentData();
+        App.JobBuilders.update(build._id, {
+            $set: {
+                "params.outputUri": this.uri
+            }
+        });
     },
     'click #submitJob': function (e, t) {
         var file = App.selectedFile.get();
