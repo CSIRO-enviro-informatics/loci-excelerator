@@ -41,7 +41,7 @@ Template.jobCreator.helpers({
         return App.JobBuilders.find({status: 'incomplete'}) == 0;
     },
     isDisabled() {
-        return App.JobBuilders.find({status: 'incomplete'}) > 0 ? "disabled" : "";
+        return App.JobBuilders.find({status: 'incomplete'}).count() > 0 ? {disabled: ""} : {};
     },
     dragging() {
         return App.isFileOver.get();

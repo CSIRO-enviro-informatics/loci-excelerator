@@ -76,6 +76,7 @@ Template.singleJob.helpers({
 
 Template.singleJob.events({
     'click .input-select': function (e, t) {
+        e.preventDefault();
         var build = Template.currentData();
         build.params.inputUri = this.uri;
         delete build.params.outputUri;
@@ -87,6 +88,7 @@ Template.singleJob.events({
         });
     },
     'click .output-select': function (e, t) {
+        e.preventDefault();
         var build = Template.currentData();
         App.JobBuilders.update(build._id, {
             $set: {
@@ -96,6 +98,7 @@ Template.singleJob.events({
         });
     },
     'click #submitJob': function (e, t) {
+        e.preventDefault();
         var file = App.selectedFile.get();
         var params = App.selectedFileJobParams.get();
         var id = App.dataId.get();
