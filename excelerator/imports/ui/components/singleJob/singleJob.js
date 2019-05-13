@@ -97,6 +97,10 @@ Template.singleJob.events({
             }
         });
     },
+    'click .close': function(e, t) {
+        var build = Template.currentData(); 
+        App.JobBuilders.remove(build._id);
+    },
     'click #submitJob': function (e, t) {
         e.preventDefault();
         var file = App.selectedFile.get();
