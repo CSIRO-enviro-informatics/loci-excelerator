@@ -5,30 +5,33 @@ import Uploads from '../../../api/uploads/uploads'
 import { App } from '../../../core.js'
 
 Template.uploadForm.onCreated(function () {
-    this.currentUpload = new ReactiveVar(false);
 });
 
 Template.uploadForm.helpers({
-    currentUpload() {
-        return Template.instance().currentUpload.get();
+    dragging() {
+        return App.isFileOver.get();
     }
 });
 
 Template.uploadForm.events({
-    "dragover #dropzone, dragenter #dropzone": function (e, t) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.originalEvent.dataTransfer.dropEffect = 'copy';
-    },
-    "drop #dropzone": function (e, t) {
-        var dataTransfer = e.originalEvent.dataTransfer;
-        if (dataTransfer && dataTransfer.files.length == 1) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.originalEvent.dataTransfer.dropEffect = 'copy';
-            selectFile(dataTransfer.files[0]);
-        }
-    },
+    // "dragover #dropzone, dragenter #dropzone": function (e, t) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     e.originalEvent.dataTransfer.dropEffect = 'copy';
+    //     t.dragging.set(true);
+    // },
+    // "drop #dropzone": function (e, t) {
+    //     var dataTransfer = e.originalEvent.dataTransfer;
+    //     if (dataTransfer && dataTransfer.files.length == 1) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //         e.originalEvent.dataTransfer.dropEffect = 'copy';
+    //         selectFile(dataTransfer.files[0]);
+    //         t.dragging.set(false);
+    //     } else {
+    //         App.message("You can only drop 1 file at a time.");
+    //     }
+    // },
     "click #dropzone": function (e, t) {
         $('input[type=file]').click();
     },
