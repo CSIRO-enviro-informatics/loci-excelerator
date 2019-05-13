@@ -38,15 +38,15 @@
                     </button>
                     <div class="dropdown-menu">
                         {{#each availableOutputs}}
-                            <a class="output-select dropdown-item {{isActive ../params.inputUri uri}}"
+                            <a class="output-select dropdown-item {{isActive ../params.outputUri uri}}"
                                 href="#">{{title}}</a>
                         {{/each}}
                     </div>
                 </div>
             </div>
         </div>
-        <div class="status-section">
-            <span class="ui-badge">{{status}}</span>
+        <div class="status-section d-flex flex-column align-items-center">
+            <span class="ui-badge {{statusClass}}">{{status}}</span>
         </div>
         <div class="remove-section">
             <button type="button" class="close" aria-label="Close">

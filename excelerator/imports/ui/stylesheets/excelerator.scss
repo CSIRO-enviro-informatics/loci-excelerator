@@ -119,7 +119,8 @@ $single-spacer: 2.0rem;
             width: 150px;
         }
     }
-    .status-section {        
+    .status-section {  
+        width: 100px;      
         margin-right: $single-spacer;
     }
     .download-section {
@@ -137,7 +138,7 @@ $single-spacer: 2.0rem;
 
 .ui-badge {
     position: relative;
-    display: block;
+    display: inline-block;
     letter-spacing: .2px!important;
     font-size: 9px!important;
     line-height: 13px!important;

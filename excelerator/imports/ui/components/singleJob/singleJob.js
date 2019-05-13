@@ -28,6 +28,9 @@ Template.singleJob.helpers({
     status() {
         return this.status;
     },
+    statusClass() {
+        return this.status == "incomplete" ? 'text-danger' : 'text-success';
+    },
     inputLabel() {
         var input = Datasets.findOne({ uri: this.params.inputUri });
         return input ? input.title : "Unknown";
@@ -78,7 +81,8 @@ Template.singleJob.events({
         delete build.params.outputUri;
         App.JobBuilders.update(build._id, {
             $set: {
-                params: build.params
+                params: build.params,
+                status: "incomplete"
             }
         });
     },
@@ -86,7 +90,8 @@ Template.singleJob.events({
         var build = Template.currentData();
         App.JobBuilders.update(build._id, {
             $set: {
-                "params.outputUri": this.uri
+                "params.outputUri": this.uri,
+                status: "ready"
             }
         });
     },
