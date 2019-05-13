@@ -1,5 +1,5 @@
 import './jobCreator.html';
-import '../uploadForm/fileDetails';
+import '../singleJob/singleJob';
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
@@ -48,56 +48,14 @@ Template.jobCreator.onCreated(function () {
 });
 
 Template.jobCreator.helpers({
-    showFileSelect() {
-        return !App.selectedFile.get();
+    hasStarted() {
+        return !!App.JobBuilders.find().count();
     },
-    showFileDetails() {
-        return App.selectedFile.get();
-    },
-    datasets() {
-        return Datasets.find({}, { sort: { title: 1 } });
-    },
-    isInputActive() {
-        var params = App.selectedFileJobParams.get();
-        return params.inputUri == this.uri && "active";
-    },
-    isOutputActive() {
-        var params = App.selectedFileJobParams.get();
-        return params.outputUri == this.uri && "active";
-    },
-    availableOutputs() {
-        var params = App.selectedFileJobParams.get();
-        if (params && params.inputUri) {
-            var uri = params.inputUri;
-            var datasetsUris = new Set();
-            Linksets.find({
-                $or: [{
-                    subjectsTarget: uri
-                }, {
-                    objectsTarget: uri
-                }]
-            }).forEach(ls => {
-                datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
-            })
-            return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } });
-        }
+    jobBuilders() {
+        return App.JobBuilders.find();
     },
     canSubmit() {
-        var params = App.selectedFileJobParams.get();
-        return params && params.inputUri && params.outputUri;
-    },
-    currentUpload() {
-        return Template.instance().currentUpload.get();
-    },
-    currentJob() {
-        var jobId = Template.instance().currentJobId.get();
-        return Jobs.findOne({ _id: jobId });
-    },
-    outputfile() {
-        var jobId = Template.instance().currentJobId.get();
-        var job = Jobs.findOne({ _id: jobId });
-        var result = job.result;
-        return Uploads.findOne({_id: result.fileId});
+        return App.JobBuilders.find({status: 'incomplete'}) == 0;
     },
     dragging() {
         return App.isFileOver.get();
@@ -105,18 +63,7 @@ Template.jobCreator.helpers({
 });
 
 Template.jobCreator.events({
-    'click .input-dataset-btn': function (e, t) {
-        var params = App.selectedFileJobParams.get();
-        params.inputUri = this.uri;
-        delete params.outputUri;
-        App.selectedFileJobParams.set(params);
-    },
-    'click .output-dataset-btn': function (e, t) {
-        var params = App.selectedFileJobParams.get();
-        params.outputUri = this.uri;
-        App.selectedFileJobParams.set(params);
-    },
-    'click #submitJob': function (e, t) {
+    'click #submitJobs': function (e, t) {
         var file = App.selectedFile.get();
         var params = App.selectedFileJobParams.get();
         var id = App.dataId.get();
