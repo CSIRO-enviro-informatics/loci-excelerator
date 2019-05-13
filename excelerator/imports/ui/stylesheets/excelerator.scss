@@ -5,16 +5,17 @@
 #dropzone {
     font-size: 1.3rem;
     padding: 15px;
-    background-color: 
-    span {
+
+    background-color: span {
         display: inline-block;
     }
 }
 
 .file-details {
     font-size: 0.7rem;
+
     td {
-        white-space: nowrap; 
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100px;
@@ -22,7 +23,7 @@
 }
 
 .elipse {
-    white-space: nowrap; 
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -46,13 +47,15 @@
     width: 100vw;
     height: 100vh;
     z-index: 9999;
-    .bg {        
+
+    .bg {
         position: absolute;
         width: 100%;
         height: 100%;
         background-color: $modal-backdrop-bg;
         opacity: 0.65;
     }
+
     .content {
         display: flex;
         justify-content: center;
@@ -70,21 +73,26 @@
         .job-row {
             border-bottom: 1px solid #0000001a;
         }
+
         .job-row:last-child {
             border: none;
         }
     }
+
     .job-row {
         height: 4rem;
     }
+
     .job-controls {
         background-color: #3c3c3c;
-        background-image: linear-gradient(45deg,rgba(0,0,0,.06) 25%,transparent 0),linear-gradient(-45deg,rgba(0,0,0,.06) 25%,transparent 0),linear-gradient(45deg,transparent 75%,rgba(0,0,0,.06) 0),linear-gradient(-45deg,transparent 75%,rgba(0,0,0,.06) 0);
+        background-image: linear-gradient(45deg, rgba(0, 0, 0, .06) 25%, transparent 0), linear-gradient(-45deg, rgba(0, 0, 0, .06) 25%, transparent 0), linear-gradient(45deg, transparent 75%, rgba(0, 0, 0, .06) 0), linear-gradient(-45deg, transparent 75%, rgba(0, 0, 0, .06) 0);
         background-size: 24px 24px;
-        background-position: 0 0,0 12px,12px -12px,-12px 0;
+        background-position: 0 0, 0 12px, 12px -12px, -12px 0;
     }
+
     #submitJobs {
         font-size: 1.3rem;
+
         i {
             opacity: 0.7;
         }
@@ -92,44 +100,55 @@
 }
 
 $single-spacer: 2.0rem;
+
 .single-job {
     .label {
         @extend .small;
         @extend .text-muted;
         display: block;
     }
-    .filename-section{
+
+    .filename-section {
         flex: 1 1 auto;
         padding-left: $single-spacer;
         padding-right: $single-spacer;
         min-width: 0;
     }
+
     .size-section {
         @extend .text-uppercase;
         padding-right: $single-spacer;
     }
+
     .from-section {
         padding-right: $single-spacer;
+
         .dropdown button {
             width: 150px;
         }
     }
+
     .to-section {
         padding-right: $single-spacer;
+
         .dropdown button {
             width: 150px;
         }
     }
-    .status-section {  
-        width: 100px;      
+
+    .status-section {
+        width: 100px;
         padding-right: $single-spacer;
     }
+
     .download-section {
         width: 100px;
         padding-right: $single-spacer;
     }
+
     .remove-section {
         padding-right: $single-spacer;
+
         span {
             display: block;
             margin-top: -3px;
@@ -140,13 +159,18 @@ $single-spacer: 2.0rem;
 .ui-badge {
     position: relative;
     display: inline-block;
-    letter-spacing: .2px!important;
-    font-size: 9px!important;
-    line-height: 13px!important;
-    font-weight: 400!important;
-    padding: 0 4px!important;
+    letter-spacing: .2px !important;
+    font-size: 9px !important;
+    line-height: 13px !important;
+    font-weight: 400 !important;
+    padding: 0 4px !important;
     text-transform: uppercase;
     color: #fc1600;
     border: 1px solid;
     border-radius: 2px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    pointer-events: all !important;
 }
