@@ -28,11 +28,16 @@ Template.singleJob.helpers({
     status() {
         return this.status;
     },
-    inputLabel() {        
-        return Datasets.findOne({uri: this.params.inputUri}).title;
+    inputLabel() {
+        var input = Datasets.findOne({ uri: this.params.inputUri });
+        return input ? input.title : "Unknown";
+    },
+    isActive(a, b) {
+        return a == b ? "active" : "";
     },
     outputLabel() {
-        return Datasets.findOne({uri: this.params.outputUri}).title;
+        var output = Datasets.findOne({ uri: this.params.outputUri });
+        return output ? output.title : "Unknown";
     },
     availableOutputs() {
         var params = this.params;
@@ -62,16 +67,20 @@ Template.singleJob.helpers({
         var jobId = Template.instance().currentJobId.get();
         var job = Jobs.findOne({ _id: jobId });
         var result = job.result;
-        return Uploads.findOne({_id: result.fileId});
+        return Uploads.findOne({ _id: result.fileId });
     },
 });
 
 Template.singleJob.events({
-    'click .input-dataset-btn': function (e, t) {
-        var params = App.selectedFileJobParams.get();
-        params.inputUri = this.uri;
-        delete params.outputUri;
-        App.selectedFileJobParams.set(params);
+    'click .input-select': function (e, t) {
+        var build = Template.currentData();
+        build.params.inputUri = this.uri;
+        delete build.params.outputUri;
+        App.JobBuilders.update(build._id, {
+            $set: {
+                params: build.params
+            }
+        });
     },
     'click .output-dataset-btn': function (e, t) {
         var params = App.selectedFileJobParams.get();
@@ -115,7 +124,7 @@ function uploadFile(file, template, cb) {
         streams: 'dynamic',
         chunkSize: 'dynamic',
         meta: {
-            userId: id 
+            userId: id
         },
     }, false);
 

@@ -1,30 +1,52 @@
 <template name="singleJob">
-    <div class="d-flex job-row align-items-center">
-        <div class="flex-grow-1">
-            <i class="far fa-file-excel"></i>
+    <div class="d-flex job-row align-items-center w-100 text-dark single-job">
+        <div class="filename-section">
+            <i class="far fa-file-excel fa-lg text-success mr-2"></i>
             <span>{{fileName}}</span>
         </div>
-        <div class="">
-            <span>{{humanFileSize}}</span>
+        <div class="size-section">
+            <span class="label">{{humanFileSize}}</span>
         </div>
-        <div>
-            <span>from</span>
-            <div class="dropdown">
-                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                    class="btn btn-sm btn-caret btn-outline-dark3 text-uppercase">
-                    JPG
-                    <i></i>
-                </button>
-                <div class="dropdown-menu select-format">
-                    Farts
+        <div class="from-section">
+            <div class="d-flex flex-row align-items-center">
+                <span class="label mr-1">from</span>
+                <div class="dropdown">
+                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
+                        <span class="small">
+                            {{inputLabel}}
+                        </span>
+                    </button>
+                    <div class="dropdown-menu">
+                        {{#each datasets}}
+                            <a class="input-select dropdown-item {{isActive ../params.inputUri uri}}" href="#">{{title}}</a>
+                        {{/each}}
+                    </div>
                 </div>
             </div>
         </div>
-        <div>
-            <span>to</span>
+        <div class="to-section">
+            <div class="d-flex flex-row align-items-center">
+                <span class="label mr-1">to</span>
+                <div class="dropdown">
+                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                        class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
+                        <span class="small">
+                            {{outputLabel}}
+                        </span>
+                    </button>
+                    <div class="dropdown-menu select-format">
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <span>{{status}}</span>
+        <div class="status-section">
+            <span class="ui-badge">{{status}}</span>
+        </div>
+        <div class="remove-section">
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
 
         <!-- <h5>Input Loc-I Dataset Type</h5>

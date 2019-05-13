@@ -91,3 +91,60 @@
     }
 }
 
+$single-spacer: 2.0rem;
+.single-job {
+    .label {
+        @extend .small;
+        @extend .text-muted;
+        display: block;
+    }
+    .filename-section{
+        flex: 1 1 auto;
+        margin-left: $single-spacer;
+        margin-right: $single-spacer;
+    }
+    .size-section {
+        @extend .text-uppercase;
+        margin-right: $single-spacer;
+    }
+    .from-section {
+        margin-right: $single-spacer;
+        .dropdown button {
+            width: 150px;
+        }
+    }
+    .to-section {
+        margin-right: $single-spacer;
+        .dropdown button {
+            width: 150px;
+        }
+    }
+    .status-section {        
+        margin-right: $single-spacer;
+    }
+    .download-section {
+        width: 100px;
+        margin-right: $single-spacer;
+    }
+    .remove-section {
+        margin-right: $single-spacer;
+        span {
+            display: block;
+            margin-top: -3px;
+        }
+    }
+}
+
+.ui-badge {
+    position: relative;
+    display: block;
+    letter-spacing: .2px!important;
+    font-size: 9px!important;
+    line-height: 13px!important;
+    font-weight: 400!important;
+    padding: 0 4px!important;
+    text-transform: uppercase;
+    color: #fc1600;
+    border: 1px solid;
+    border-radius: 2px;
+}
