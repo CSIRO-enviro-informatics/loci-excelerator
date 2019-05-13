@@ -99,6 +99,9 @@ Template.jobCreator.helpers({
         var result = job.result;
         return Uploads.findOne({_id: result.fileId});
     },
+    dragging() {
+        return App.isFileOver.get();
+    }
 });
 
 Template.jobCreator.events({

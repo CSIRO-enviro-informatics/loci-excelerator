@@ -69,4 +69,17 @@
             {{/if}}
         </div>
     </div>
+    {{#if dragging}}
+        {{> dropScreen}}
+    {{/if}}
+
+</template>
+
+<template name="dropScreen">
+    <div class="drop-screen">
+        <div class="bg"></div>
+        <div class="content">
+            <i class="fas fa-plus fa-4x text-light"></i>
+        </div>
+    </div>
 </template>

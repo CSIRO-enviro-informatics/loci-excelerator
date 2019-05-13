@@ -8,9 +8,6 @@ Template.uploadForm.onCreated(function () {
 });
 
 Template.uploadForm.helpers({
-    dragging() {
-        return App.isFileOver.get();
-    }
 });
 
 Template.uploadForm.events({
