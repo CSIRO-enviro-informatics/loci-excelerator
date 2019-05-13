@@ -21,6 +21,12 @@
     }
 }
 
+.elipse {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .table-container {
     overflow-x: auto;
 }
@@ -60,6 +66,14 @@
 }
 
 .job-panel {
+    .jobs-holder {
+        .job-row {
+            border-bottom: 1px solid #0000001a;
+        }
+        .job-row:last-child {
+            border: none;
+        }
+    }
     .job-row {
         height: 4rem;
     }
