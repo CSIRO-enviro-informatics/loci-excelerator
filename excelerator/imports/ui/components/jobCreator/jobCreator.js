@@ -40,6 +40,9 @@ Template.jobCreator.helpers({
     canSubmit() {
         return App.JobBuilders.find({status: 'incomplete'}) == 0;
     },
+    isDisabled() {
+        return App.JobBuilders.find({status: 'incomplete'}) > 0 ? "disabled" : "";
+    },
     dragging() {
         return App.isFileOver.get();
     }

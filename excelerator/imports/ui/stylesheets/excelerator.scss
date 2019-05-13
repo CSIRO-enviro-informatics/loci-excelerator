@@ -100,35 +100,36 @@ $single-spacer: 2.0rem;
     }
     .filename-section{
         flex: 1 1 auto;
-        margin-left: $single-spacer;
-        margin-right: $single-spacer;
+        padding-left: $single-spacer;
+        padding-right: $single-spacer;
+        min-width: 0;
     }
     .size-section {
         @extend .text-uppercase;
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
     }
     .from-section {
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
         .dropdown button {
             width: 150px;
         }
     }
     .to-section {
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
         .dropdown button {
             width: 150px;
         }
     }
     .status-section {  
         width: 100px;      
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
     }
     .download-section {
         width: 100px;
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
     }
     .remove-section {
-        margin-right: $single-spacer;
+        padding-right: $single-spacer;
         span {
             display: block;
             margin-top: -3px;
