@@ -18,9 +18,6 @@ window.Jobs = Jobs;
 Template.jobCreator.onCreated(function () {
     var tpl = this;
 
-    tpl.currentUpload = new ReactiveVar(false);
-    tpl.currentJobId = new ReactiveVar();
-
     Meteor.subscribe('datasets.all');
     Meteor.subscribe('linksets.all');
     Meteor.subscribe("jobs.all");
@@ -38,10 +35,10 @@ Template.jobCreator.helpers({
         return App.JobBuilders.find();
     },
     canSubmit() {
-        return App.JobBuilders.find({status: 'incomplete'}) == 0;
+        return App.JobBuilders.find({ status: 'incomplete' }) == 0;
     },
     isDisabled() {
-        return App.JobBuilders.find({status: 'incomplete'}).count() > 0 ? {disabled: ""} : {};
+        return App.JobBuilders.find({ status: 'incomplete' }).count() > 0 ? { disabled: "" } : {};
     },
     dragging() {
         return App.isFileOver.get();
@@ -49,55 +46,71 @@ Template.jobCreator.helpers({
 });
 
 Template.jobCreator.events({
-    'click #submitJobs': function (e, t) {
-        var file = App.selectedFile.get();
-        var params = App.selectedFileJobParams.get();
+    'click #submitJobs': async function (e, t) {
         var id = App.dataId.get();
 
-        uploadFile(file, t, function (err, fileObj) {
-            if (err) {
-                App.error(err);
-            } else {
+        var builds = App.JobBuilders.find().fetch();
+
+        builds.forEach(async build => {
+            var file = App.files[build.fileId];
+
+            try {
+                var fileObj = await uploadFile(file, build);
                 var job = new Job(Jobs, 'convert', {
                     // email: "",
                     userId: id,
                     from: {
                         fileId: fileObj._id,
-                        datasetUri: params.inputUri,
-                        columnIndex: 0
+                        datasetUri: build.params.inputUri,
+                        columnIndex: build.params.columnIndex
                     },
                     to: {
-                        datasetUri: params.outputUri,
-                        aggregationFunc: 'count'
+                        datasetUri: build.params.outputUri,
+                        aggregationFunc: App.Helpers.aggregationMethods[0]
                     }
                 });
                 job.save((err, id) => {
-                    t.currentJobId.set(id);
+                    JobBuilders.update(build._id, { $set: { jobId: id } });
                 });
+            } catch (err) {
+                JobBuilders.update(build._id, { $set: { error: err.message } });
             }
         })
     }
 });
 
-function uploadFile(file, template, cb) {
-    var id = App.dataId.get();
-    const upload = Uploads.insert({
-        file: file,
-        streams: 'dynamic',
-        chunkSize: 'dynamic',
-        meta: {
-            userId: id 
-        },
-    }, false);
+function uploadFile(file, build) {
+    return new Promise((resolve, reject) => {
+        var id = App.dataId.get();
+        const upload = Uploads.insert({
+            file: file,
+            streams: 'dynamic',
+            chunkSize: 'dynamic',
+            meta: {
+                userId: id
+            },
+        }, false);
 
-    upload.on('start', function () {
-        template.currentUpload.set(this);
-    });
+        upload.on('start', function (error, fileObj) {
+            var id = this.config.fileId;
+            App.uploaders[id] = this;
+            JobBuilders.update(build._id, { $set: { uploadId: id } });
+        });
 
-    upload.on('end', function (error, fileObj) {
-        template.currentUpload.set(false);
-        cb(error, fileObj)
-    });
+        upload.on('end', function (error, fileObj) {
+            if (error)
+                reject(error);
+            else {
+                var id = this.config.fileId;
+                JobBuilders.update(build._id, { 
+                    // $unset: { uploadId: "" },
+                    $set: { uploadComplete: true } 
+                });
+                delete App.uploaders[id];
+                resolve(fileObj);
+            }
+        });
 
-    upload.start();
+        upload.start();
+    })
 }

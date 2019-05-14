@@ -3,6 +3,7 @@
 import { ReactiveVar } from 'meteor/reactive-var';
 import { Mongo } from 'meteor/mongo';
 import { Random } from 'meteor/random'
+import Helpers from './helpers'
 
 const JobBuilders = new Mongo.Collection(null);
 window.JobBuilders = JobBuilders;
@@ -26,7 +27,9 @@ export const App = {
     dataId: new ReactiveVar(null),
     isFileOver: new ReactiveVar(false),
     JobBuilders: JobBuilders,
+    Helpers,
     files: {},
+    uploaders: {},
 
     humanFileSize(size) {
         var i = Math.floor(Math.log(size) / Math.log(1024));
@@ -45,7 +48,9 @@ export const App = {
             fileId: clientSideFileId,
             fileName: file.name,
             fileSize: file.size,
-            params: {},
+            params: {
+                columnIndex: 0, //default for now
+            },
             status: 'incomplete'
         })
     },
