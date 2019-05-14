@@ -40,7 +40,8 @@ export function convert(job, cb) {
                 row.push('Test Header');
             else
                 row.push("Shane Test");
-            var rowText = row.join(', ');
+            // var rowText = row.join(', '); need to factor in delimiters
+            var rowText = Papa.unparse([row], {header: false});
             outputStream.write(rowText + "\n");
         })
         outputStream.end();
