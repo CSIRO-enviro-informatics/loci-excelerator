@@ -8,7 +8,7 @@ export function convert(job, cb) {
 
     var file = Uploads.findOne({ _id: jobData.from.fileId });
     var inputFile = file.get('path');
-    var outputFile = `${Meteor.settings.public.uploads.path}/converted_${file.get("name")}`;
+    var outputFile = `${Meteor.settings.public.uploads.path}/converted_${file.get("_id")}`;
 
     const inputStream = fs.createReadStream(inputFile);
     const outputStream = fs.createWriteStream(outputFile);
@@ -54,7 +54,7 @@ export function convert(job, cb) {
         var metadata = file.get('meta');
 
         Uploads.addFile(outputFile, {
-            fileName: "conversion_output.csv",
+            fileName: `converted - ${file.get('name')}`,
             type: "text/csv",
             meta: {
                 userId: metadata.userId,

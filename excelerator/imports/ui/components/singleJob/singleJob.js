@@ -26,10 +26,22 @@ Template.singleJob.helpers({
         return Datasets.find({}, { sort: { title: 1 } });
     },
     status() {
+        if(this.error) return "error";
+        if(this.jobId) {
+            var job = Jobs.findOne({ _id: this.jobId });
+            return job.status;
+        }
         return this.status;
     },
     statusClass() {
-        return this.status == "incomplete" ? 'text-danger' : 'text-success';
+        if(this.error) return "text-danger";
+        switch(this.status) {
+            case "ready":
+            case "complete":
+                return 'text-success';
+            default:
+                return 'text-warning';
+        }
     },
     inputLabel() {
         var input = Datasets.findOne({ uri: this.params.inputUri });
@@ -59,18 +71,19 @@ Template.singleJob.helpers({
             return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } });
         }
     },
-    currentUpload() {
-        return Template.instance().currentUpload.get();
+    building() {
+        return this.status == "incomplete" || this.status == "ready";
+    },
+    uploader() {
+        return this.uploadId && App.uploaders[this.uploadId];
     },
     currentJob() {
-        var jobId = Template.instance().currentJobId.get();
-        return Jobs.findOne({ _id: jobId });
+        return Jobs.findOne({ _id: this.jobId });
     },
     outputfile() {
-        var jobId = Template.instance().currentJobId.get();
+        var jobId = Template.instance().data.jobId;
         var job = Jobs.findOne({ _id: jobId });
-        var result = job.result;
-        return Uploads.findOne({ _id: result.fileId });
+        return job && job.result && Uploads.findOne({ _id: job.result.fileId });
     },
 });
 
@@ -101,56 +114,4 @@ Template.singleJob.events({
         var build = Template.currentData(); 
         App.JobBuilders.remove(build._id);
     },
-    'click #submitJob': function (e, t) {
-        e.preventDefault();
-        var file = App.selectedFile.get();
-        var params = App.selectedFileJobParams.get();
-        var id = App.dataId.get();
-
-        uploadFile(file, t, function (err, fileObj) {
-            if (err) {
-                App.error(err);
-            } else {
-                var job = new Job(Jobs, 'convert', {
-                    // email: "",
-                    userId: id,
-                    from: {
-                        fileId: fileObj._id,
-                        datasetUri: params.inputUri,
-                        columnIndex: 0
-                    },
-                    to: {
-                        datasetUri: params.outputUri,
-                        aggregationFunc: 'count'
-                    }
-                });
-                job.save((err, id) => {
-                    t.currentJobId.set(id);
-                });
-            }
-        })
-    }
 });
-
-function uploadFile(file, template, cb) {
-    var id = App.dataId.get();
-    const upload = Uploads.insert({
-        file: file,
-        streams: 'dynamic',
-        chunkSize: 'dynamic',
-        meta: {
-            userId: id
-        },
-    }, false);
-
-    upload.on('start', function () {
-        template.currentUpload.set(this);
-    });
-
-    upload.on('end', function (error, fileObj) {
-        template.currentUpload.set(false);
-        cb(error, fileObj)
-    });
-
-    upload.start();
-}
