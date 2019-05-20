@@ -56,7 +56,7 @@ export const App = {
     },
 }
 
-App.addNewBuilder(testFile);
+// App.addNewBuilder(testFile);
 
 const addListener = (target, events, func) => {
     events.forEach((event) => {

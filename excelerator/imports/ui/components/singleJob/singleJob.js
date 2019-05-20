@@ -26,7 +26,8 @@ Template.singleJob.helpers({
         return Datasets.find({}, { sort: { title: 1 } });
     },
     status() {
-        if(this.error) return "error";
+        if(this.error) 
+            return "error";
         if(this.jobId) {
             var job = Jobs.findOne({ _id: this.jobId });
             return job.status;
