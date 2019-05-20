@@ -1,0 +1,10 @@
+{
+  "public": {
+      "siteName": "Excelerator",
+      "uploads": {
+          "maxSize": 1073741824,
+          "maxSizeText": "1GB",
+          "path": "/files"
+      }
+  }
+}
