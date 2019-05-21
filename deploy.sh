@@ -8,8 +8,9 @@ if ! [ -x "$(command -v mup)" ]; then
     exit 1
 fi
 
-meteor npm install
+cd excelerator
+npm install
 
-cd .deploy
+cd ../.deploy
 mup setup
 mup deploy
