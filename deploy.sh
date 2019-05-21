@@ -8,6 +8,8 @@ if ! [ -x "$(command -v mup)" ]; then
     exit 1
 fi
 
+meteor npm install
+
 cd .deploy
 mup setup
 mup deploy
