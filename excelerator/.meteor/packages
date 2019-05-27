@@ -26,3 +26,4 @@ seba:minifiers-autoprefixer
 ostrio:files
 vsivsi:job-collection
 raix:handlebar-helpers
+http
