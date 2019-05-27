@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
+    "debug": "meteor run --settings settings.json --inspect-brk=9229",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "postinstall": "./postinstall.sh"
   },
