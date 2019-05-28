@@ -1,11 +1,10 @@
 <template name="jobCreator">
     <div class="container job-creator">
         <div class="row h-100 align-items-center">
-            {{#if $not hasStarted}}
-                <div class="offset-sm-3 col-sm-6">
-                    {{> uploadForm}}
-                </div>
-            {{else}}
+            <div class="offset-sm-3 col-sm-6 {{#if hasStarted}}d-none{{/if}}" >
+                {{> uploadForm}}
+            </div>
+            {{#if hasStarted}}
                 <div class="col-sm-12">
                     <div class="job-panel shadow rounded-bottom">
                         <div class="jobs-holder shadow-sm bg-white">

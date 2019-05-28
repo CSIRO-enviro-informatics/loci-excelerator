@@ -42,7 +42,7 @@ Template.jobCreator.helpers({
     },
     dragging() {
         return App.isFileOver.get();
-    }
+    },
 });
 
 Template.jobCreator.events({
@@ -84,6 +84,10 @@ Template.jobCreator.events({
                 JobBuilders.update(build._id, { $set: { error: err.message } });
             }
         })
+    }, 
+    'click #addMore': function(e, t) {
+        //this is a bit crap. relying on uploadForm for be rendered
+        $('input[type=file]').click();
     }
 });
 

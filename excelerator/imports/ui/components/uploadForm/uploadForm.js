@@ -36,10 +36,11 @@ Template.uploadForm.events({
         var files = e.target.files;
         if (files && files.length == 1) {
             selectFile(files[0]);
+            e.target.value = null;
         }
     }
 });
 
 function selectFile(file) {
-    App.selectedFile.set(file);
+    App.addNewBuilder(file);
 }
