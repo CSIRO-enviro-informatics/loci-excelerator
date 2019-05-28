@@ -1,4 +1,4 @@
 {
     "html.format.indentHandlebars": true,
-    "debug.node.autoAttach": "off"
+    "debug.node.autoAttach": "on"
 }
