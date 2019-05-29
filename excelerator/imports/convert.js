@@ -2,20 +2,25 @@ import Uploads from './api/uploads/uploads'
 import { Meteor } from 'meteor/meteor'
 import fs from 'fs';
 import Papa from 'papaparse';
+import Linksets from './api/linksets/linksets';
+import { getQueryResults } from './linksetApi';
+import Helpers from './helpers';
 
 export function convert(job, cb) {
 
-    var count = 1;
-    var timerId = Meteor.setInterval(() => {
-        count++;
-        job.progress(count * 10, 100);
-        if (count == 10) {
-            Meteor.clearInterval(timerId);
-            // job.done();
-            // cb()
-            realWork();
-        }
-    }, 2000);
+    // var count = 1;
+    // var timerId = Meteor.setInterval(() => {
+    //     count++;
+    //     job.progress(count * 10, 100);
+    //     if (count == 10) {
+    //         Meteor.clearInterval(timerId);
+    //         // job.done();
+    //         // cb()
+    //         realWork();
+    //     }
+    // }, 2000);
+
+    realWork(); //This was a function for the progress stuff above. Take it out 
 
     function realWork() {
 
@@ -50,16 +55,11 @@ export function convert(job, cb) {
         })
 
         csvStream.on('end', () => {
-            data.forEach((row, i) => {
-                if (jobData.from.header && i == 0)
-                    row.push('Test Header');
-                else
-                    row.push("Shane Test");
-                // var rowText = row.join(', '); need to factor in delimiters
-                var rowText = Papa.unparse([row], { header: false });
-                outputStream.write(rowText + "\n");
-            })
-            outputStream.end();
+            try {
+                processData(data, job, outputStream);
+            } catch(err) {
+                failAndCleanUp(err);
+            }
         })
 
         outputStream.on('error', (err) => {
@@ -87,8 +87,84 @@ export function convert(job, cb) {
                 cb();
             });
         })
+    }
+}
+
+function processData(data, job, outputStream) {
+    var jobData = job.data;
+    var linkset = Linksets.findOne({ subjectsTarget: jobData.from.datasetUri, objectsTarget: jobData.to.datasetUri });
+    var isReverse = false; //is the dataset going from subject to object
+    if (!linkset) {
+        isReverse = true;
+        linkset = Linksets.findOne({ subjectsTarget: jobData.to.datasetUri, objectsTarget: jobData.from.datasetUri });
+    }
+
+    if (!linkset) {
+        throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
+    }
+
+    var predicates = linkset.linkPredicates;
+
+    //Need to put MB areas in the graph
+
+    data.forEach((row, i) => {
+        if (jobData.from.header && i == 0)
+            row.push(jobData.to.datasetUri);
+        else {
+            var fromUri = row[linkset.from.columnIndex];
+            if(!fromUri)
+                throw new Meteor.Error(`Undefined uri in row ${i}`);
+
+            predicates.forEach(pred => {
+                var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
 
 
+            })
+            row.push("Shane Test");
+        }
+    })
 
+    data.forEach((row, i) => {
+        if (jobData.from.header && i == 0)
+            row.push(jobData.to.datasetUri);
+        else {
+            row.push("Shane Test");
+        }
+        // var rowText = row.join(', '); need to factor in delimiters
+        var rowText = Papa.unparse([row], { header: false });
+        outputStream.write(rowText + "\n");
+    })
+    outputStream.end();
+}
+
+function getStatements(fromUri, isReverse, predUri, linksetUri) {
+    var toVar = "?to";
+    var wrappedUri = `<${fromUri}>`;
+    var subjectText = isReverse ? toVar : wrappedUri;
+    var objectText = isReverse ? wrappedUri : toVar;
+    var query = `PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX loci: <http://linked.data.gov.au/def/loci#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX dct: <http://purl.org/dc/terms/>
+SELECT *
+WHERE {
+    ?s dct:isPartOf <${linksetUri}> ;
+       rdf:subject ${subjectText} ;
+       rdf:predicate <${predUri}> ;
+       rdf:object ${objectText} .
+    ${toVar} rdf:type ?t .
+}`;
+
+    var results = getQueryResults(query);
+    try {
+        var result = getQueryResults(linksetQuery);
+        var json = JSON.parse(result.content);
+        var bindings = json.results.bindings;
+        var matches = bindings.map(b => ({uri: b.to.value, type: b.t.value}))
+        return matches;
+    } catch (e) {
+        console.log(e)
+        throw e;
     }
 }
