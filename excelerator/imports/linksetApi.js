@@ -28,6 +28,12 @@ export const PROPS = {
     "objectsTarget": "http://rdfs.org/ns/void#objectsTarget"
 }
 
+export const KNOWN_PREDS = {
+    "sfWithin": "http://www.opengis.net/ont/geosparql#sfWithin",
+    "transitiveSfOverlap": "http://linked.data.gov.au/def/geox#transitiveSfOverlap",
+    "sfEquals": "http://www.opengis.net/ont/geosparql#sfEquals"
+}
+
 export function getQueryAsUrl(query) {
     var queryString = querystring.stringify({
         query

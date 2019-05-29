@@ -1,5 +1,5 @@
 export default Helpers = {
-    aggregationMethods: ['count', 'avg', 'sum', 'min', 'max'],
+    aggregationMethods: {COUNT: 'count', AVG: 'avg', SUM: 'sum', MIN: 'min', MAX: 'max'},
     groupBy: function(list, keyGetter) {
         const map = new Map();
         list.forEach((item) => {

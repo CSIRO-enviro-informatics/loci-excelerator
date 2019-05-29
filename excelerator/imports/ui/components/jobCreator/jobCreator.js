@@ -71,7 +71,7 @@ Template.jobCreator.events({
                     },
                     to: {
                         datasetUri: build.params.outputUri,
-                        aggregationFunc: App.Helpers.aggregationMethods[0]
+                        aggregationFunc: App.Helpers.aggregationMethods.COUNT
                     }
                 });
                 job.save((err, id) => {

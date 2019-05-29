@@ -3,8 +3,9 @@ import { Meteor } from 'meteor/meteor'
 import fs from 'fs';
 import Papa from 'papaparse';
 import Linksets from './api/linksets/linksets';
-import { getQueryResults } from './linksetApi';
+import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
+import { isNumber } from 'util';
 
 export function convert(job, cb) {
 
@@ -57,7 +58,7 @@ export function convert(job, cb) {
         csvStream.on('end', () => {
             try {
                 processData(data, job, outputStream);
-            } catch(err) {
+            } catch (err) {
                 failAndCleanUp(err);
             }
         })
@@ -106,19 +107,59 @@ function processData(data, job, outputStream) {
     var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
+    var dataCache = {};
+    var skipped = [];
 
     data.forEach((row, i) => {
         if (jobData.from.header && i == 0)
             row.push(jobData.to.datasetUri);
         else {
-            var fromUri = row[linkset.from.columnIndex];
-            if(!fromUri)
+            var fromUri = row[jobData.from.columnIndex];
+            if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
 
             predicates.forEach(pred => {
-                var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
+                if (pred === KNOWN_PREDS.sfWithin) {
+                    var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
 
+                    if (isReverse) {
+                        //contains many
 
+                    } else {
+                        //assuming within one
+                        if (toObjects.length > 1) {
+                            throw new Meteor.Error(`${fromUri} in row ${i} is within many, and we dont handle that yet.`);
+                        } else if (toObjects.length == 0) {
+                            skipped.push(row);
+                        } else {
+                            var toUri = toObjects[0].uri;
+                            if (!dataCache[toUri]) {
+                                var zeros = {};
+                                row.forEach((val, colIndex) => {
+                                    if(colIndex != jobData.from.columnIndex) {
+                                        dataCache[toUri][colIndex] = 0;
+                                    }
+                                });
+                                dataCache[toUri] = zeros;
+                            }
+                            
+                            row.forEach((val, colIndex) => {
+                                if(colIndex != jobData.from.columnIndex) {
+                                    switch(jobData.to.aggregationFunc) {
+                                        case Helpers.aggregationMethods.COUNT:
+                                            dataCache[toUri][colIndex] += val;
+                                            break;
+                                        default: 
+                                            throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);    
+                                    }
+                                }
+                            });
+    
+                        }
+                    }
+                } else {
+                    throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
+                }
             })
             row.push("Shane Test");
         }
@@ -161,7 +202,7 @@ WHERE {
         var result = getQueryResults(linksetQuery);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
-        var matches = bindings.map(b => ({uri: b.to.value, type: b.t.value}))
+        var matches = bindings.map(b => ({ uri: b.to.value, type: b.t.value }))
         return matches;
     } catch (e) {
         console.log(e)
