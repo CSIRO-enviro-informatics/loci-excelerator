@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import fs from 'fs';
 import Papa from 'papaparse';
 import Linksets from './api/linksets/linksets';
+import Datasets from './api/datasets/datasets';
 import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
@@ -104,6 +105,16 @@ function processData(data, job, outputStream) {
         throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
     }
 
+    var fromDataset = Datasets.findOne({ uri: jobData.from.datasetUri });
+    if (!fromDataset) {
+        throw new Meteor.Error(`The from dataset cannot be found ${jobData.from.datasetUri}`);
+    }
+    var toDataset = Datasets.findOne({ uri: jobData.to.datasetUri });
+    if (!toDataset) {
+        throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
+    }
+
+
     var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
@@ -113,13 +124,13 @@ function processData(data, job, outputStream) {
     var lastUpdate = new Date();
 
     data.forEach((row, i) => {
-        var sinceUpdate =  new Date() - lastUpdate;
-        if(sinceUpdate > 1000) {
+        var sinceUpdate = new Date() - lastUpdate;
+        if (sinceUpdate > 1000) {
             lastUpdate = new Date();
             job.progress(i, data.length);
         }
 
-        if (jobData.from.header && i == 0)
+        if (jobData.hasHeaders && i == 0)
             row.push(jobData.to.datasetUri);
         else {
             var fromUri = row[jobData.from.columnIndex];
@@ -142,47 +153,67 @@ function processData(data, job, outputStream) {
                         } else {
                             var toUri = toObjects[0].uri;
                             if (!dataCache[toUri]) {
-                                var zeros = {};
+                                var zeros = [];
                                 row.forEach((val, colIndex) => {
-                                    if(colIndex != jobData.from.columnIndex) {
-                                        dataCache[toUri][colIndex] = 0;
+                                    if (colIndex != jobData.from.columnIndex) {
+                                        dataCache[toUri][colIndex] = { total: 0, count: 0 };
                                     }
                                 });
                                 dataCache[toUri] = zeros;
                             }
-                            
+
                             row.forEach((val, colIndex) => {
-                                if(colIndex != jobData.from.columnIndex) {
-                                    switch(jobData.to.aggregationFunc) {
+                                if (colIndex != jobData.from.columnIndex) {
+                                    switch (jobData.to.aggregationFunc) {
+                                        case Helpers.aggregationMethods.SUM:
                                         case Helpers.aggregationMethods.COUNT:
-                                            dataCache[toUri][colIndex] += val;
+                                        case Helpers.aggregationMethods.AVG:
+                                            dataCache[toUri][colIndex].value += val;
+                                            dataCache[toUri][colIndex].count++;
                                             break;
-                                        default: 
-                                            throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);    
+                                        default:
+                                            throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
                                     }
                                 }
                             });
-    
                         }
                     }
                 } else {
                     throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                 }
             })
-            row.push("Shane Test");
         }
     })
 
-    data.forEach((row, i) => {
-        if (jobData.from.header && i == 0)
-            row.push(jobData.to.datasetUri);
-        else {
-            row.push("Shane Test");
-        }
-        // var rowText = row.join(', '); need to factor in delimiters
-        var rowText = Papa.unparse([row], { header: false });
+    //write the headers
+    if (jobData.hasHeaders) {
+        var headerRow = data[0];
+        headerRow[jobData.from.columnIndex] = toDataset.title;
+    }
+
+    //write the data rows
+    Object.keys(dataCache).sort().forEach((toUri, i) => {
+        var totals = dataCache[toUri];
+        var rowValues = totals.map((tots, colIndex) => {
+            switch (jobData.to.aggregationFunc) {
+                case Helpers.aggregationMethods.SUM:
+                    return tots.value;
+                case Helpers.aggregationMethods.COUNT:
+                    return tots.count;
+                case Helpers.aggregationMethods.AVG:
+                    return tots.value / tots.count;
+                default:
+                    throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
+            }
+        });
+        rowValues[jobData.from.columnIndex] = toUri;
+        var rowText = Papa.unparse([rowValues], { header: false });
         outputStream.write(rowText + "\n");
     })
+
+    //do something with skipped rows.
+    console.log(skipped); //something better than this
+
     outputStream.end();
 }
 
