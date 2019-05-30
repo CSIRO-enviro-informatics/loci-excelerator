@@ -64,6 +64,7 @@ Template.jobCreator.events({
                 var job = new Job(Jobs, 'convert', {
                     // email: "",
                     userId: id,
+                    hasHeaders: build.params.hasHeaders,
                     from: {
                         fileId: fileObj._id,
                         datasetUri: build.params.inputUri,

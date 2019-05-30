@@ -48,6 +48,7 @@ export const App = {
             fileId: clientSideFileId,
             fileName: file.name,
             fileSize: file.size,
+            hasHeaders: true,
             params: {
                 columnIndex: 0, //default for now
             },
