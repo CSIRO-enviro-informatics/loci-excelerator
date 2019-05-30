@@ -56,13 +56,13 @@ export function convert(job, cb) {
             failAndCleanUp(err);
         })
 
-        csvStream.on('end', () => {
+        csvStream.on('end', Meteor.bindEnvironment(() => {
             try {
                 processData(data, job, outputStream);
             } catch (err) {
                 failAndCleanUp(err);
             }
-        })
+        }))
 
         outputStream.on('error', (err) => {
             failAndCleanUp(err);
@@ -130,9 +130,7 @@ function processData(data, job, outputStream) {
             job.progress(i, data.length);
         }
 
-        if (jobData.hasHeaders && i == 0)
-            row.push(jobData.to.datasetUri);
-        else {
+        if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
@@ -156,7 +154,7 @@ function processData(data, job, outputStream) {
                                 var zeros = [];
                                 row.forEach((val, colIndex) => {
                                     if (colIndex != jobData.from.columnIndex) {
-                                        dataCache[toUri][colIndex] = { total: 0, count: 0 };
+                                        zeros[colIndex] = { total: 0, count: 0 };
                                     }
                                 });
                                 dataCache[toUri] = zeros;
@@ -164,11 +162,14 @@ function processData(data, job, outputStream) {
 
                             row.forEach((val, colIndex) => {
                                 if (colIndex != jobData.from.columnIndex) {
+                                    if(isNaN(val))
+                                        throw new Meteor.Error(`Value "${val}" found in row ${i}, col ${colIndex} is not a number.`);
+
                                     switch (jobData.to.aggregationFunc) {
                                         case Helpers.aggregationMethods.SUM:
                                         case Helpers.aggregationMethods.COUNT:
                                         case Helpers.aggregationMethods.AVG:
-                                            dataCache[toUri][colIndex].value += val;
+                                            dataCache[toUri][colIndex].total += +val;
                                             dataCache[toUri][colIndex].count++;
                                             break;
                                         default:
@@ -189,6 +190,8 @@ function processData(data, job, outputStream) {
     if (jobData.hasHeaders) {
         var headerRow = data[0];
         headerRow[jobData.from.columnIndex] = toDataset.title;
+        var rowText = Papa.unparse([headerRow], { header: false });
+        outputStream.write(rowText + "\n");
     }
 
     //write the data rows
@@ -197,11 +200,11 @@ function processData(data, job, outputStream) {
         var rowValues = totals.map((tots, colIndex) => {
             switch (jobData.to.aggregationFunc) {
                 case Helpers.aggregationMethods.SUM:
-                    return tots.value;
+                    return tots.total;
                 case Helpers.aggregationMethods.COUNT:
                     return tots.count;
                 case Helpers.aggregationMethods.AVG:
-                    return tots.value / tots.count;
+                    return tots.total / tots.count;
                 default:
                     throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
             }
@@ -236,9 +239,8 @@ WHERE {
     ${toVar} rdf:type ?t .
 }`;
 
-    var results = getQueryResults(query);
     try {
-        var result = getQueryResults(linksetQuery);
+        var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
         var matches = bindings.map(b => ({ uri: b.to.value, type: b.t.value }))

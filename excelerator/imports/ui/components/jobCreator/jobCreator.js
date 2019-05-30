@@ -64,7 +64,7 @@ Template.jobCreator.events({
                 var job = new Job(Jobs, 'convert', {
                     // email: "",
                     userId: id,
-                    hasHeaders: build.params.hasHeaders,
+                    hasHeaders: build.hasHeaders,
                     from: {
                         fileId: fileObj._id,
                         datasetUri: build.params.inputUri,
@@ -72,7 +72,7 @@ Template.jobCreator.events({
                     },
                     to: {
                         datasetUri: build.params.outputUri,
-                        aggregationFunc: App.Helpers.aggregationMethods.COUNT
+                        aggregationFunc: App.Helpers.aggregationMethods.SUM
                     }
                 });
                 job.save((err, id) => {

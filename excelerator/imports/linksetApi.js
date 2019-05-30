@@ -1,6 +1,8 @@
 const querystring = require('querystring');
 
 const SPARQL_URI = "http://db.loci.cat/repositories/cache"
+const USER = "ro";
+const PASSWORD = "locireadonly"; //Yes it's bad to have password here, but its only for the readonly user, and the data is public anyway
 
 export const NS = {
     "loci": "PREFIX loci: <http://linked.data.gov.au/def/loci#>",
@@ -42,7 +44,16 @@ export function getQueryAsUrl(query) {
 }
 
 export function getQueryResults(query) {
-    return HTTP.get(getQueryAsUrl(query), {headers: {Accept: 'application/sparql-results+json'}});
+    var data = `${USER}:${PASSWORD}`;
+    var buff = new Buffer(data);
+    var base64data = buff.toString('base64');
+
+    return HTTP.get(getQueryAsUrl(query), {
+        headers: {
+            Accept: 'application/sparql-results+json',
+            Authorization: `Basic ${base64data}`
+        }
+    });
 }
 
 
