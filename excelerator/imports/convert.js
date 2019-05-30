@@ -110,7 +110,15 @@ function processData(data, job, outputStream) {
     var dataCache = {};
     var skipped = [];
 
+    var lastUpdate = new Date();
+
     data.forEach((row, i) => {
+        var sinceUpdate =  new Date() - lastUpdate;
+        if(sinceUpdate > 1000) {
+            lastUpdate = new Date();
+            job.progress(i, data.length);
+        }
+
         if (jobData.from.header && i == 0)
             row.push(jobData.to.datasetUri);
         else {
