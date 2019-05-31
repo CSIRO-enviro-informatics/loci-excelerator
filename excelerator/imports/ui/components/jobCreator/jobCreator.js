@@ -76,17 +76,19 @@ Template.jobCreator.events({
                     }
                 });
                 job.save((err, id) => {
-                    JobBuilders.update(build._id, { $set: { 
-                        jobId: id, 
-                        status: "submitted"
-                    } });
+                    JobBuilders.update(build._id, {
+                        $set: {
+                            jobId: id,
+                            status: "submitted"
+                        }
+                    });
                 });
             } catch (err) {
                 JobBuilders.update(build._id, { $set: { error: err.message } });
             }
         })
-    }, 
-    'click #addMore': function(e, t) {
+    },
+    'click #addMore': function (e, t) {
         //this is a bit crap. relying on uploadForm for be rendered
         $('input[type=file]').click();
     }
@@ -107,11 +109,11 @@ function uploadFile(file, build) {
         upload.on('start', function (error, fileObj) {
             var id = this.config.fileId;
             App.uploaders[id] = this;
-            JobBuilders.update(build._id, { 
-                $set: { 
+            JobBuilders.update(build._id, {
+                $set: {
                     uploadId: id,
                     status: 'uploading'
-                } 
+                }
             });
         });
 
@@ -120,9 +122,9 @@ function uploadFile(file, build) {
                 reject(error);
             else {
                 var id = this.config.fileId;
-                JobBuilders.update(build._id, { 
+                JobBuilders.update(build._id, {
                     // $unset: { uploadId: "" },
-                    $set: { uploadComplete: true } 
+                    $set: { uploadComplete: true }
                 });
                 delete App.uploaders[id];
                 resolve(fileObj);

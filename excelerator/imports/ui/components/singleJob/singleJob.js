@@ -26,10 +26,11 @@ Template.singleJob.helpers({
         return Datasets.find({}, { sort: { title: 1 } });
     },
     status() {
+        var job = Jobs.findOne({ _id: this.jobId });
+
         if(this.error) 
             return "error";
-        if(this.jobId) {
-            var job = Jobs.findOne({ _id: this.jobId });
+        if(job) {
             return job.status;
         }
         return this.status;
@@ -119,10 +120,19 @@ Template.singleJob.events({
         App.JobBuilders.remove(build._id);
     },
     'click #retryJob': function(e, t) {
-        var job = Jobs.getJob(this.jobId);
-        job.restart(function(result) {
-            if(!result)
-                console.log('Job failed to restart');
+        var build = this;
+        job = new Job(Jobs, Jobs.findOne({_id: build.jobId}));
+        var something = job.rerun({wait: 0}, function(err, newId) {
+            if(err)
+                App.error(err);
+            else {
+                console.log(`Rerun id: ${newId}`);
+                JobBuilders.update(build._id, {
+                    $set: {
+                        jobId: newId
+                    }
+                });
+            }
         });
     }
 });
