@@ -136,19 +136,16 @@ function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
 
             predicates.forEach(pred => {
-                if (pred === KNOWN_PREDS.sfWithin) {
+                if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
                     var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
-
-                    if (isReverse) {
+                    
+                    if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                         //contains many
-
                     } else {
                         //assuming within one
                         if (toObjects.length > 1) {
-                            throw new Meteor.Error(`${fromUri} in row ${i} is within many, and we dont handle that yet.`);
-                        } else if (toObjects.length == 0) {
-                            skipped.push(row);
-                        } else {
+                            throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
+                        } else if (toObjects.length == 1) {
                             var toUri = toObjects[0].uri;
                             if (!dataCache[toUri]) {
                                 var zeros = [];
@@ -162,7 +159,7 @@ function processData(data, job, outputStream) {
 
                             row.forEach((val, colIndex) => {
                                 if (colIndex != jobData.from.columnIndex) {
-                                    if(isNaN(val))
+                                    if (isNaN(val))
                                         throw new Meteor.Error(`Value "${val}" found in row ${i}, col ${colIndex} is not a number.`);
 
                                     switch (jobData.to.aggregationFunc) {
@@ -177,6 +174,8 @@ function processData(data, job, outputStream) {
                                     }
                                 }
                             });
+                        } else {
+                            skipped.push(row);
                         }
                     }
                 } else {
