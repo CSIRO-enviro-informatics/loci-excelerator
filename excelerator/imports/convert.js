@@ -147,39 +147,28 @@ function processData(data, job, outputStream) {
                             throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
                         } else if (toObjects.length == 1) {
                             var toUri = toObjects[0].uri;
-                            if (!dataCache[toUri]) {
-                                var zeros = [];
-                                row.forEach((val, colIndex) => {
-                                    if (colIndex != jobData.from.columnIndex) {
-                                        zeros[colIndex] = { total: 0, count: 0 };
-                                    }
-                                });
-                                dataCache[toUri] = zeros;
-                            }
-
-                            row.forEach((val, colIndex) => {
-                                if (colIndex != jobData.from.columnIndex) {
-                                    if (isNaN(val))
-                                        throw new Meteor.Error(`Value "${val}" found in row ${i}, col ${colIndex} is not a number.`);
-
-                                    switch (jobData.to.aggregationFunc) {
-                                        case Helpers.aggregationMethods.SUM:
-                                        case Helpers.aggregationMethods.COUNT:
-                                        case Helpers.aggregationMethods.AVG:
-                                            dataCache[toUri][colIndex].total += +val;
-                                            dataCache[toUri][colIndex].count++;
-                                            break;
-                                        default:
-                                            throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
-                                    }
-                                }
-                            });
+                            prepareCache(dataCache, toUri, row, jobData);
+                            addToCache(dataCache, toUri, row, jobData, val => val );
                         } else {
                             skipped.push(row);
                         }
                     }
                 } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
+                    var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
 
+                    if (toObjects.length != 0) {
+                        statements.forEach(statement => {
+                            if (statement.to.unit != statement.from.unit || statement.to.unit != statement.overlap.unit)
+                                throw new Meteor.Error(`Mixed units found for conversion of row ${i}, col ${colIndex}. We dont handle that yet`);
+                
+                            var toUri = statement.to.uri;
+                            prepareCache(dataCache, toUri, row, jobData);
+                            var proportionToGive = statement.overlap.area / statement.from.area;
+                            addToCache(dataCache, toUri, row, jobData, val => val * proportionToGive );
+                        })
+                    } else {
+                        skipped.push(row);
+                    }
                 } else {
                     throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                 }
@@ -220,6 +209,40 @@ function processData(data, job, outputStream) {
 
     outputStream.end();
 }
+
+function prepareCache(dataCache, toUri, row, jobData) {
+    if (!dataCache[toUri]) {
+        var zeros = [];
+        row.forEach((val, colIndex) => {
+            if (colIndex != jobData.from.columnIndex) {
+                zeros[colIndex] = { total: 0, count: 0 };
+            }
+        });
+        dataCache[toUri] = zeros;
+    }
+}
+
+function addToCache(dataCache, toUri, row, jobData, valFunc) {
+    row.forEach((colVal, colIndex) => {
+        if (colIndex != jobData.from.columnIndex) {
+            if (isNaN(colVal))
+                throw new Meteor.Error(`Value "${colVal}" found in row ${i}, col ${colIndex} is not a number.`);
+
+            var val = valFunc(+colVal) 
+            switch (jobData.to.aggregationFunc) {
+                case Helpers.aggregationMethods.SUM:
+                case Helpers.aggregationMethods.COUNT:
+                case Helpers.aggregationMethods.AVG:
+                    dataCache[toUri][colIndex].total += +val;
+                    dataCache[toUri][colIndex].count++;
+                    break;
+                default:
+                    throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
+            }
+        }
+    });
+}
+
 
 function getStatements(fromUri, isReverse, predUri, linksetUri) {
     var toVar = "?to";
