@@ -138,7 +138,7 @@ function processData(data, job, outputStream) {
             predicates.forEach(pred => {
                 if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
                     var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
-                    
+
                     if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                         //contains many
                     } else {
@@ -178,6 +178,8 @@ function processData(data, job, outputStream) {
                             skipped.push(row);
                         }
                     }
+                } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
+
                 } else {
                     throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                 }
@@ -243,6 +245,70 @@ WHERE {
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
         var matches = bindings.map(b => ({ uri: b.to.value, type: b.t.value }))
+        return matches;
+    } catch (e) {
+        console.log(e)
+        throw e;
+    }
+}
+
+function getOverlapStatements(fromUri, isReverse, predUri, linksetUri) {
+    var filterExp = `${isReverse ? '?obj' : '?sub'} = <${fromUri}>`
+    var query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX dct: <http://purl.org/dc/terms/>
+prefix dbp: <http://dbpedia.org/property/>
+PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
+PREFIX qu: <http://qudt.org/schema/qudt#unit>
+PREFIX m2: <http://qudt.org/schema/qudt#SquareMeter>
+PREFIX c: <http://www.opengis.net/ont/geosparql#sfContains>
+PREFIX f: <http://www.opengis.net/ont/geosparql#Feature>
+PREFIX l: <${linksetUri}>
+
+SELECT ?sub ?subArea ?subUnit ?obj ?objArea ?objUnit ?intersectArea ?intersectUnit
+WHERE {
+    ?s dct:isPartOf l: ;
+        rdf:subject ?sub;
+        rdf:predicate <${predUri}> ;
+        rdf:object ?obj .
+    ?sub dbp:area [ nv: ?subArea ;
+            qu: ?subUnit ] .
+    ?obj dbp:area [ nv: ?objArea ;
+            qu: ?objUnit ] .    
+    ?intersect a f: ;
+        dbp:area [ nv: ?intersectArea ;
+            qu: ?intersectUnit ] .     
+    ?overlap1 dct:isPartOf l: ;
+        rdf:subject ?sub ;
+        rdf:predicate c: ;
+            rdf:object ?intersect .    
+    ?overlap2 dct:isPartOf l: ;
+        rdf:subject ?obj  ;
+        rdf:predicate c: ;
+            rdf:object ?intersect .
+    FILTER(${filterExp})
+}`;
+
+    try {
+        var result = getQueryResults(query);
+        var json = JSON.parse(result.content);
+        var bindings = json.results.bindings;
+        var matches = bindings.map(b => ({
+            from: {
+                uri: isReverse ? b.obj.value : b.sub.value,
+                unit: isReverse ? b.objUnit.value : b.subUnit.value,
+                area: isReverse ? b.objArea.value : b.subArea.value,
+            },
+            to: {
+                uri: isReverse ? b.sub.value : b.obj.value,
+                unit: isReverse ? b.subUnit.value : b.objUnit.value,
+                area: isReverse ? b.subArea.value : b.objArea.value,
+            },
+            overlap: {
+                unit: b.intersectUnit.value,
+                area: b.intersectArea.value,
+            },
+        }))
         return matches;
     } catch (e) {
         console.log(e)
