@@ -86,6 +86,9 @@ Template.singleJob.helpers({
         var job = Jobs.findOne({ _id: jobId });
         return job && job.result && Uploads.findOne({ _id: job.result.fileId });
     },
+    isDevelopment() {
+        return Meteor.isDevelopment;
+    }
 });
 
 Template.singleJob.events({
@@ -115,4 +118,11 @@ Template.singleJob.events({
         var build = Template.currentData(); 
         App.JobBuilders.remove(build._id);
     },
+    'click #retryJob': function(e, t) {
+        var job = Jobs.getJob(this.jobId);
+        job.restart(function(result) {
+            if(!result)
+                console.log('Job failed to restart');
+        });
+    }
 });

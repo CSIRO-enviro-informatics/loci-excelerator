@@ -74,7 +74,7 @@
                     {{#if $eq status 'completed' }}
                         {{#with outputfile.with}}
                             <a href="{{link}}?download=true" download="{{name}}" target="_parent" type="{{type}}"
-                                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                                class="d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                                 <i class="fas fa-download fa-sm text-white-50"></i> Download
                             </a>
                         {{/with}}
@@ -89,6 +89,11 @@
             <button type="button" class="close" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
+            {{#if isDevelopment }}
+                <button id="retryJob" class="d-inline-block btn btn-sm btn-warning">
+                    <i class="fas fa-redo fa-sm text-white-50"></i>
+                </button>
+            {{/if}}
         </div>
     </div>
     {{#if dragging}}
