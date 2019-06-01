@@ -134,7 +134,7 @@ function processData(data, job, outputStream) {
             var fromUri = row[jobData.from.columnIndex];
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
-            
+
             var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
             predicates.forEach(pred => {
                 if (!predicateSuccess) {
@@ -143,6 +143,20 @@ function processData(data, job, outputStream) {
 
                         if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                             //contains many
+                            if (toObjects.length != 0) {
+                                predicateSuccess = true;
+                                var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
+                                toObjects.forEach(toObj => {
+                                    prepareCache(dataCache, toObj.uri, row, jobData);
+                                    if (hasAreas) {
+                                        var proportionToGive = toObj.area / toObj.fromArea;
+                                        addToCache(dataCache, toObj.uri, row, jobData, val => val * proportionToGive);
+                                    } else {
+                                        addToCache(dataCache, toObj.uri, row, jobData, val => val);
+                                        dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
+                                    }
+                                });
+                            }
                         } else {
                             //assuming within one
                             if (toObjects.length > 1) {
@@ -168,23 +182,28 @@ function processData(data, job, outputStream) {
                                 var proportionToGive = statement.overlap.area / statement.from.area;
                                 addToCache(dataCache, toUri, row, jobData, val => val * proportionToGive);
                             })
-                        } 
+                        }
                     } else {
                         throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                     }
                 }
             })
-            if(!predicateSuccess)
+            if (!predicateSuccess)
                 skipped.push(row); //this row had no matches
         }
     })
 
     job.progress(data.length, data.length);
 
+    var hasUnknowns = dataCache.find(x => x.unapportioned);
+
     //write the headers
     if (jobData.hasHeaders) {
         var headerRow = data[0];
         headerRow[jobData.from.columnIndex] = toDataset.title;
+        if (hasUnknowns) {
+            headerRow.push("Originating URI");
+        }
         var rowText = Papa.unparse([headerRow], { header: false });
         outputStream.write(rowText + "\n");
     }
@@ -205,6 +224,16 @@ function processData(data, job, outputStream) {
             }
         });
         rowValues[jobData.from.columnIndex] = toUri;
+
+        if (hasUnknowns) {
+            if (totals.unapportioned) {
+                rowValues = rowValues.map(x => "?" + x);
+                rowValues.push(totals.unapportioned);
+            } else {
+                rowValues.push(''); //just a placeholder for nothing
+            }
+        }
+
         var rowText = Papa.unparse([rowValues], { header: false });
         outputStream.write(rowText + "\n");
     })
