@@ -34,10 +34,12 @@ Template.uploadForm.events({
     },
     "change input[type=file]": function (e, t) {
         var files = e.target.files;
-        if (files && files.length == 1) {
-            selectFile(files[0]);
-            e.target.value = null;
+        if (files) {
+            for (var i = 0; i < files.length; i++) {
+                selectFile(files[i]);
+            }
         }
+        e.target.value = null;
     }
 });
 
