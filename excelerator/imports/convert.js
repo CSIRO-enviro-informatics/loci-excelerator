@@ -295,13 +295,38 @@ WHERE {
        rdf:predicate <${predUri}> ;
        rdf:object ${objectText} .
     ${toVar} rdf:type ?t .
+    OPTIONAL {
+        ${subjectText} dbp:area [ nv: ?subArea ;
+                        qu: ?subUnit ] .
+    }
+    OPTIONAL {
+        ${objectText} dbp:area [ nv: ?objArea ;
+                        qu: ?objUnit ] .    
+    }
 }`;
 
     try {
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
-        var matches = bindings.map(b => ({ uri: b.to.value, type: b.t.value }))
+        var matches = bindings.map(b => {
+            var matchObj = {
+                uri: b.to.value,
+                type: b.t.value
+            };
+            if (isReverse) {
+                if (b.objArea)
+                    matchObj.fromArea = b.objArea.value;
+                if (b.subArea)
+                    matchObj.area = b.subArea.value;
+            } else {
+                if (b.subArea)
+                    matchObj.fromArea = b.subArea.value;
+                if (b.objArea)
+                    matchObj.area = b.objArea.value;
+            }
+            return matchObj;
+        })
         return matches;
     } catch (e) {
         console.log(e)
