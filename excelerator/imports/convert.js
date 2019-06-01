@@ -41,7 +41,7 @@ export function convert(job, cb) {
             inputStream.destroy();
             outputStream.destroy();
             csvStream.destroy();
-            job.fail();
+            job.fail(err);
             cb();
         }
 
@@ -134,47 +134,52 @@ function processData(data, job, outputStream) {
             var fromUri = row[jobData.from.columnIndex];
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
-
+            
+            var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
             predicates.forEach(pred => {
-                if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
-                    var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
+                if (!predicateSuccess) {
+                    if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
+                        var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
 
-                    if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
-                        //contains many
-                    } else {
-                        //assuming within one
-                        if (toObjects.length > 1) {
-                            throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
-                        } else if (toObjects.length == 1) {
-                            var toUri = toObjects[0].uri;
-                            prepareCache(dataCache, toUri, row, jobData);
-                            addToCache(dataCache, toUri, row, jobData, val => val );
+                        if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
+                            //contains many
                         } else {
-                            skipped.push(row);
+                            //assuming within one
+                            if (toObjects.length > 1) {
+                                throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
+                            } else if (toObjects.length == 1) {
+                                predicateSuccess = true;
+                                var toUri = toObjects[0].uri;
+                                prepareCache(dataCache, toUri, row, jobData);
+                                addToCache(dataCache, toUri, row, jobData, val => val);
+                            }
                         }
-                    }
-                } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
-                    var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
+                    } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
+                        var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
 
-                    if (toObjects.length != 0) {
-                        statements.forEach(statement => {
-                            if (statement.to.unit != statement.from.unit || statement.to.unit != statement.overlap.unit)
-                                throw new Meteor.Error(`Mixed units found for conversion of row ${i}, col ${colIndex}. We dont handle that yet`);
-                
-                            var toUri = statement.to.uri;
-                            prepareCache(dataCache, toUri, row, jobData);
-                            var proportionToGive = statement.overlap.area / statement.from.area;
-                            addToCache(dataCache, toUri, row, jobData, val => val * proportionToGive );
-                        })
+                        if (statements.length != 0) {
+                            predicateSuccess = true;
+                            statements.forEach(statement => {
+                                if (statement.to.unit != statement.from.unit || statement.to.unit != statement.overlap.unit)
+                                    throw new Meteor.Error(`Mixed units found for conversion of row ${i}, col ${colIndex}. We dont handle that yet`);
+
+                                var toUri = statement.to.uri;
+                                prepareCache(dataCache, toUri, row, jobData);
+                                var proportionToGive = statement.overlap.area / statement.from.area;
+                                addToCache(dataCache, toUri, row, jobData, val => val * proportionToGive);
+                            })
+                        } 
                     } else {
-                        skipped.push(row);
+                        throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                     }
-                } else {
-                    throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
                 }
             })
+            if(!predicateSuccess)
+                skipped.push(row); //this row had no matches
         }
     })
+
+    job.progress(data.length, data.length);
 
     //write the headers
     if (jobData.hasHeaders) {
@@ -228,7 +233,7 @@ function addToCache(dataCache, toUri, row, jobData, valFunc) {
             if (isNaN(colVal))
                 throw new Meteor.Error(`Value "${colVal}" found in row ${i}, col ${colIndex} is not a number.`);
 
-            var val = valFunc(+colVal) 
+            var val = valFunc(+colVal)
             switch (jobData.to.aggregationFunc) {
                 case Helpers.aggregationMethods.SUM:
                 case Helpers.aggregationMethods.COUNT:
