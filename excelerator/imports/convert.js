@@ -195,7 +195,8 @@ function processData(data, job, outputStream) {
 
     job.progress(data.length, data.length);
 
-    var hasUnknowns = dataCache.find(x => x.unapportioned);
+
+    var hasUnknowns = !!Object.keys(dataCache).find(uri => dataCache[uri].unapportioned);
 
     //write the headers
     if (jobData.hasHeaders) {
@@ -288,6 +289,10 @@ PREFIX loci: <http://linked.data.gov.au/def/loci#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX dct: <http://purl.org/dc/terms/>
+prefix dbp: <http://dbpedia.org/property/>
+PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
+PREFIX qu: <http://qudt.org/schema/qudt#unit>
+
 SELECT *
 WHERE {
     ?s dct:isPartOf <${linksetUri}> ;
