@@ -28,16 +28,22 @@ Template.singleJob.helpers({
     status() {
         var job = Jobs.findOne({ _id: this.jobId });
 
-        if(this.error) 
+        if (this.error)
             return "error";
-        if(job) {
-            return job.status;
+        if (job) {
+            if (job.status == 'ready') {
+                var stat = 'queued'
+                if (!isNaN(job.queuePos))
+                    stat += ` #${job.queuePos + 1}`;
+                return stat;
+            } else
+                return job.status;
         }
         return this.status;
     },
     statusClass() {
-        if(this.error) return "text-danger";
-        switch(this.status) {
+        if (this.error) return "text-danger";
+        switch (this.status) {
             case "ready":
             case "complete":
                 return 'text-success';
@@ -94,6 +100,15 @@ Template.singleJob.helpers({
         var jobId = Template.instance().data.jobId;
         var job = Jobs.findOne({ _id: jobId });
         return job.failures[0].message;
+    },
+    waiting() {
+        if (this.status == 'submitted') {
+            var job = Jobs.findOne({ _id: this.jobId });
+            if (job)
+                return job.status == 'waiting' || job.status == 'ready';
+            else
+                return true;
+        }
     }
 });
 
@@ -120,21 +135,21 @@ Template.singleJob.events({
             }
         });
     },
-    'click .close': function(e, t) {
-        var build = Template.currentData(); 
-        if(build.jobId) {
-            Meteor.call("jobs.hide", build.jobId, function() {
+    'click .close': function (e, t) {
+        var build = Template.currentData();
+        if (build.jobId) {
+            Meteor.call("jobs.hide", build.jobId, function () {
                 App.JobBuilders.remove(build._id);
             });
         } else {
             App.JobBuilders.remove(build._id);
         }
     },
-    'click #retryJob': function(e, t) {
+    'click #retryJob': function (e, t) {
         var build = this;
-        job = new Job(Jobs, Jobs.findOne({_id: build.jobId}));
-        var something = job.rerun({wait: 0}, function(err, newId) {
-            if(err)
+        job = new Job(Jobs, Jobs.findOne({ _id: build.jobId }));
+        var something = job.rerun({ wait: 0 }, function (err, newId) {
+            if (err)
                 App.error(err);
             else {
                 console.log(`Rerun id: ${newId}`);

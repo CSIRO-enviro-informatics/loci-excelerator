@@ -26,19 +26,24 @@ Meteor.startup(function () {
             },
             fields: {
                 _id: 1,
+                queuePos: 1
             }
         }).observe({
-            addedAt(document, atIndex, before) {                
-                Jobs.update(document._id, {$set: {queuePos: atIndex}});
+            addedAt(document, atIndex, before) {
+                Jobs.update({ queuePos: { $gte: atIndex } }, { $inc: { queuePos: 1 } }, {multi: true});
+                Jobs.update(document._id, { $set: { queuePos: atIndex } });
                 console.log(`Job Added at ${atIndex} (${document._id})`)
             },
-            changedAt(newDocument, oldDocument, atIndex) {
-                Jobs.update(newDocument._id, {$set: {queuePos: atIndex}})
-                console.log(`Job Changed at ${atIndex} (${newDocument._id})`)
-            },
             removedAt(oldDocument, atIndex) {
-                Jobs.update(oldDocument._id, {$unset: {queuePos: true}})
+                Jobs.update(oldDocument._id, { $unset: { queuePos: true } })
                 console.log(`Job Removed at ${atIndex} (${oldDocument._id})`)
+                Jobs.update({ queuePos: { $gt: atIndex } }, { $inc: { queuePos: -1 } }, {multi: true});
+                // Jobs.find({ queuePos: { $exists: true } }, {
+                //     fields: {
+                //         _id: 1,
+                //         queuePos: 1
+                //     }
+                // }).forEach(x => console.log(x));
             }
         })
 

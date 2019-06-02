@@ -59,10 +59,10 @@
                         </div>
                     </div>
                 {{/with}}
+                {{#if waiting}}
+                    <i class="fas fa-spinner fa-pulse"></i>
+                {{/if}}
                 {{#with currentJob}}
-                    {{#if $eq status 'waiting' }}                        
-                        <i class="fas fa-spinner fa-pulse"></i>
-                    {{/if}}
                     {{#if $eq status 'failed' }}                        
                         <span class="text-danger elipse" title="{{failedText}}">{{failedText}}</span>
                     {{/if}}
