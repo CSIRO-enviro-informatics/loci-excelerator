@@ -89,6 +89,11 @@ Template.singleJob.helpers({
     },
     isDevelopment() {
         return Meteor.isDevelopment;
+    },
+    failedText() {
+        var jobId = Template.instance().data.jobId;
+        var job = Jobs.findOne({ _id: jobId });
+        return job.failures[0].message;
     }
 });
 
