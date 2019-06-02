@@ -240,7 +240,10 @@ export function processData(data, job, outputStream) {
     })
 
     //do something with skipped rows.
-    console.log(skipped); //something better than this
+    if(skipped.length > 0) {
+        console.log("These rows were skipped"); //something better than this    
+        console.log(skipped);
+    }
 
     outputStream.end();
 }

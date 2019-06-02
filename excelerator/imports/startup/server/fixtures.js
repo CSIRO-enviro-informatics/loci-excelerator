@@ -5,5 +5,6 @@ import Datasets from '../../api/datasets/datasets'
 import Linksets from '../../api/linksets/linksets'
 
 Meteor.startup(() => {
-    Meteor.call('updateLinksets');
+    Meteor.call('updateLinksets', function() {
+    });
 });
