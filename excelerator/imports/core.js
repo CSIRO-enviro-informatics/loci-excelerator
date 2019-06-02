@@ -45,6 +45,7 @@ export const App = {
         var clientSideFileId = Random.id();
         this.files[clientSideFileId] = file;
         JobBuilders.insert({
+            created: new Date(),
             fileId: clientSideFileId,
             fileName: file.name,
             fileSize: file.size,
@@ -55,6 +56,23 @@ export const App = {
             status: 'incomplete'
         })
     },
+    addNewBuilderFromJob(job) {
+        JobBuilders.insert({
+            jobId: job._id,
+            // created: new Date(),
+            jobCreated: job.created,
+            // fileId: clientSideFileId,
+            fileName: job.data.fileName,
+            fileSize: job.data.fileSize,
+            hasHeaders: job.data.hasHeaders,
+            params: {
+                columnIndex: job.data.from.columnIndex,
+                inputUri: job.data.from.datasetUri,
+                outputUri: job.data.to.datasetUri
+            },
+            status: 'submitted'
+        })
+    }
 }
 
 // App.addNewBuilder(testFile);

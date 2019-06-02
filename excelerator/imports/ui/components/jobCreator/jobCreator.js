@@ -25,6 +25,17 @@ Template.jobCreator.onCreated(function () {
         Meteor.subscribe("jobs.id", App.dataId.get());
         Meteor.subscribe('uploads.user', App.dataId.get());
     })
+    Tracker.autorun(function () {
+        //show all old jobs by creating fake jobbuilders
+        var jobs = Jobs.find({hide: {$in: [null, false]}}, {fields: { _id: 1, created: 1, data: 1 }});
+        jobs.forEach(job => {
+            var builder = JobBuilders.findOne({$or: [{jobId: job._id}, {pendingId: true}]});
+            if(!builder) {
+                App.addNewBuilderFromJob(job);
+            }
+        })
+    })
+
 });
 
 Template.jobCreator.helpers({
@@ -32,13 +43,13 @@ Template.jobCreator.helpers({
         return !!App.JobBuilders.find().count();
     },
     jobBuilders() {
-        return App.JobBuilders.find();
+        return App.JobBuilders.find({}, { sort: { created: 1, jobCreated: 1 } });
     },
     canSubmit() {
-        return App.JobBuilders.find({ status: 'incomplete' }) == 0;
+        return App.JobBuilders.find({ status: 'ready' }).count() > 0;
     },
     isDisabled() {
-        return App.JobBuilders.find({ status: 'incomplete' }).count() > 0 ? { disabled: "" } : {};
+        return App.JobBuilders.find({ status: 'ready' }).count() == 0 ? { disabled: "" } : {};
     },
     dragging() {
         return App.isFileOver.get();
@@ -49,9 +60,10 @@ Template.jobCreator.events({
     'click #submitJobs': async function (e, t) {
         var id = App.dataId.get();
 
-        var builds = App.JobBuilders.find().fetch();
+        var builds = App.JobBuilders.find({jobId: null}).fetch();
         builds.forEach(x => App.JobBuilders.update(x._id, {
             $set: {
+                pendingId: true,
                 status: "started"
             }
         }))
@@ -64,6 +76,8 @@ Template.jobCreator.events({
                 var job = new Job(Jobs, 'convert', {
                     // email: "",
                     userId: id,
+                    fileName: build.fileName,
+                    fileSize: build.fileSize,
                     hasHeaders: build.hasHeaders,
                     from: {
                         fileId: fileObj._id,
