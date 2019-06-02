@@ -92,7 +92,7 @@ export function convert(job, cb) {
     }
 }
 
-function processData(data, job, outputStream) {
+export function processData(data, job, outputStream) {
     var jobData = job.data;
     var linkset = Linksets.findOne({ subjectsTarget: jobData.from.datasetUri, objectsTarget: jobData.to.datasetUri });
     var isReverse = false; //is the dataset going from subject to object
