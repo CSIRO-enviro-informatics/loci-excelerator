@@ -37,11 +37,13 @@ export function convert(job, cb) {
         const csvStream = inputStream.pipe(Papa.parse(Papa.NODE_STREAM_INPUT));
 
         function failAndCleanUp(err) {
-            console.log(err);
             inputStream.destroy();
             outputStream.destroy();
             csvStream.destroy();
-            job.fail(err);
+            job.fail({
+                message: err.message,
+                code: err.code
+            });
             cb();
         }
 
