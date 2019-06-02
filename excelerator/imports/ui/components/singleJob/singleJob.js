@@ -122,9 +122,12 @@ Template.singleJob.events({
     },
     'click .close': function(e, t) {
         var build = Template.currentData(); 
-        App.JobBuilders.remove(build._id);
         if(build.jobId) {
-            Meteor.call("jobs.hide", build.jobId, function() {});
+            Meteor.call("jobs.hide", build.jobId, function() {
+                App.JobBuilders.remove(build._id);
+            });
+        } else {
+            App.JobBuilders.remove(build._id);
         }
     },
     'click #retryJob': function(e, t) {
