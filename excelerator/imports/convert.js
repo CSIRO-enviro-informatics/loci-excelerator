@@ -47,6 +47,7 @@ export function convert(job, cb) {
 
         //read all in memeory implementation
         var data = [];
+        var skipped = [];
 
         csvStream.on('data', function (item) {
             data.push(item);
@@ -58,7 +59,8 @@ export function convert(job, cb) {
 
         csvStream.on('end', Meteor.bindEnvironment(() => {
             try {
-                processData(data, job, outputStream);
+                var result = processData(data, job, outputStream);
+                skipped = result.skipped;
             } catch (err) {
                 failAndCleanUp(err);
             }
@@ -84,7 +86,10 @@ export function convert(job, cb) {
                     job.fail();
                 } else {
                     var fileId = fileObj._id;
-                    job.done({ fileId });
+                    job.done({ 
+                        fileId, 
+                        // skipped: skipped //not adding yet as could make job object too big
+                    });
                 }
                 cb();
             });
@@ -150,9 +155,9 @@ export function processData(data, job, outputStream) {
                                     prepareCache(dataCache, toObj.uri, row, jobData);
                                     if (hasAreas) {
                                         var proportionToGive = toObj.area / toObj.fromArea;
-                                        addToCache(dataCache, toObj.uri, row, jobData, val => val * proportionToGive);
+                                        addToCache(dataCache, toObj.uri, row,  i,jobData, val => val * proportionToGive);
                                     } else {
-                                        addToCache(dataCache, toObj.uri, row, jobData, val => val);
+                                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
                                         dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
                                     }
                                 });
@@ -165,7 +170,7 @@ export function processData(data, job, outputStream) {
                                 predicateSuccess = true;
                                 var toUri = toObjects[0].uri;
                                 prepareCache(dataCache, toUri, row, jobData);
-                                addToCache(dataCache, toUri, row, jobData, val => val);
+                                addToCache(dataCache, toUri, row, i, jobData, val => val);
                             }
                         }
                     } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
@@ -180,7 +185,7 @@ export function processData(data, job, outputStream) {
                                 var toUri = statement.to.uri;
                                 prepareCache(dataCache, toUri, row, jobData);
                                 var proportionToGive = statement.overlap.area / statement.from.area;
-                                addToCache(dataCache, toUri, row, jobData, val => val * proportionToGive);
+                                addToCache(dataCache, toUri, row, i, jobData, val => val * proportionToGive);
                             })
                         }
                     } else {
@@ -188,8 +193,9 @@ export function processData(data, job, outputStream) {
                     }
                 }
             })
-            if (!predicateSuccess)
+            if (!predicateSuccess) {
                 skipped.push(row); //this row had no matches
+            }
         }
     })
 
@@ -240,13 +246,9 @@ export function processData(data, job, outputStream) {
         outputStream.write(rowText + "\n");
     })
 
-    //do something with skipped rows.
-    if(skipped.length > 0) {
-        console.log("These rows were skipped"); //something better than this    
-        console.log(skipped);
-    }
-
     outputStream.end();
+
+    return {skipped};
 }
 
 function prepareCache(dataCache, toUri, row, jobData) {
@@ -261,7 +263,7 @@ function prepareCache(dataCache, toUri, row, jobData) {
     }
 }
 
-function addToCache(dataCache, toUri, row, jobData, valFunc) {
+function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     row.forEach((colVal, colIndex) => {
         if (colIndex != jobData.from.columnIndex) {
             if (isNaN(colVal))
