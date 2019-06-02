@@ -224,16 +224,17 @@ export function processData(data, job, outputStream) {
                     throw new Meteor.Error(`Aggregation method '${jobData.to.aggregationFunc}' not yet implemented`);
             }
         });
-        rowValues[jobData.from.columnIndex] = toUri;
 
         if (hasUnknowns) {
             if (totals.unapportioned) {
                 rowValues = rowValues.map(x => "?" + x);
-                rowValues.push(totals.unapportioned);
+                rowValues.push(totals.unapportioned); //add the originatingUri
             } else {
                 rowValues.push(''); //just a placeholder for nothing
             }
         }
+
+        rowValues[jobData.from.columnIndex] = toUri;
 
         var rowText = Papa.unparse([rowValues], { header: false });
         outputStream.write(rowText + "\n");
