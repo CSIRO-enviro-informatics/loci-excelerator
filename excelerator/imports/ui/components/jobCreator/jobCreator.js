@@ -43,7 +43,7 @@ Template.jobCreator.helpers({
         return !!App.JobBuilders.find().count();
     },
     jobBuilders() {
-        return App.JobBuilders.find({}, { sort: { created: 1, jobCreated: 1 } });
+        return App.JobBuilders.find({}, { sort: { created: 1, jobCreated: 1, _id: 1 } });
     },
     canSubmit() {
         return App.JobBuilders.find({ status: 'ready' }).count() > 0;
