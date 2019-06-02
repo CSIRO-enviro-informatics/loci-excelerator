@@ -54,6 +54,9 @@ Template.jobCreator.helpers({
     dragging() {
         return App.isFileOver.get();
     },
+    readyCount() {
+        return App.JobBuilders.find({ status: 'ready' }).count();
+    }
 });
 
 Template.jobCreator.events({
