@@ -41,7 +41,7 @@ export function convert(job, cb) {
             outputStream.destroy();
             csvStream.destroy();
             job.fail({
-                message: err.message,
+                message:  Helpers.trimChar(Helpers.trimChar(err.message,'['), ']'),
                 code: err.code
             });
             cb();
