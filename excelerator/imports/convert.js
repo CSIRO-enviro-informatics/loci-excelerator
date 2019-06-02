@@ -141,6 +141,8 @@ export function processData(data, job, outputStream) {
             var fromUri = row[jobData.from.columnIndex];
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
+            if(fromUri.indexOf(jobData.from.datasetUri) == -1)
+                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
 
             var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
             predicates.forEach(pred => {
