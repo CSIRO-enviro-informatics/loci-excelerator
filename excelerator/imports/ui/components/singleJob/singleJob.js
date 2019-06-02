@@ -118,6 +118,9 @@ Template.singleJob.events({
     'click .close': function(e, t) {
         var build = Template.currentData(); 
         App.JobBuilders.remove(build._id);
+        if(build.jobId) {
+            Meteor.call("jobs.hide", build.jobId, function() {});
+        }
     },
     'click #retryJob': function(e, t) {
         var build = this;
