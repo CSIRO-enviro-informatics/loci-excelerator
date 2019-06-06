@@ -1,0 +1,149 @@
+<template name="iderdownCreator">
+    <div class="container job-creator">
+        <div class="row h-100 align-items-center">
+            <div class="offset-sm-2 col-sm-8 {{#if hasStarted}}d-none{{/if}}">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Download Loc-I IDs</h6>
+                    </div>
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        {{> iderdownForm}}
+                    </div>
+                </div>
+            </div>
+            {{#if hasStarted}}
+                <div class="col-sm-12">
+                    <div class="job-panel shadow rounded-bottom">
+                        <div class="jobs-holder shadow-sm bg-white">
+                            {{#each jobBuilders}}
+                                {{> singleJob}}
+                            {{/each}}
+                        </div>
+                        <div class="job-row">
+                        </div>
+                        <div
+                            class="d-flex flex-direction-row job-row align-items-center job-controls rounded-bottom overflow-hidden">
+                            <div class="flex-grow-1">
+                                <div>
+                                    <button id="addMore" type="button" class="btn btn-light ml-4 mr-2 pr-4">
+                                        <i class="fas fa-plus mx-2 text-primary"></i>
+                                        Add more data
+                                    </button>
+                                    <small class="text-muted">or drag on another file</small>
+                                </div>
+                            </div>
+                            <button id="submitJobs" type="button"
+                                class="btn-primary h-100 w-25 d-flex justify-content-between align-items-center"
+                                {{isDisabled}}>
+                                <span class="ml-4">Convert {{#if readyCount}}{{readyCount}}{{/if}}</span>
+                                <i class="fas fa-arrow-right mr-2"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</template>
+
+<template name="iderdownForm">
+    {{#with context}}
+        <form>
+            <div class="form-group form-row">
+                <div class="col-3">
+                    Dataset
+                </div>
+                <div class="col-4">
+                    <div class="dropdown">
+                        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            <span class="small">
+                                {{outputDataset}}
+                            </span>
+                        </button>
+                        <div class="dropdown-menu">
+                            {{#each datasets}}
+                                <a class="input-select dropdown-item {{isActive ../params.outputUri uri}}"
+                                    href="#">{{title}}</a>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1 text-center">
+                    -
+                </div>
+                <div class="col-4">
+                    <div class="dropdown">
+                        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            <span class="small">
+                                {{outputDataset}}
+                            </span>
+                        </button>
+                        <div class="dropdown-menu">
+                            {{#each datasets}}
+                                <a class="input-select dropdown-item {{isActive ../params.outputSubTypeUri uri}}"
+                                    href="#">{{title}}</a>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-row">
+                <div class="col-3">
+                    Filter by
+                </div>
+                <div class="col-4">
+                    <div class="dropdown">
+                        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            <span class="small">
+                                {{filterDataset}}
+                            </span>
+                        </button>
+                        <div class="dropdown-menu">
+                            {{#each datasets}}
+                                <a class="input-select dropdown-item {{isActive ../params.filterUri uri}}"
+                                    href="#">{{title}}</a>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1 text-center">
+                    -
+                </div>
+                <div class="col-4">
+                    <div class="dropdown">
+                        <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            <span class="small">
+                                {{outputDataset}}
+                            </span>
+                        </button>
+                        <div class="dropdown-menu">
+                            {{#each datasets}}
+                                <a class="input-select dropdown-item {{isActive ../params.filterSubTypeUri uri}}"
+                                    href="#">{{title}}</a>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group form-row">
+                <div class="col-3">
+                    Ids
+                </div>
+                <div class="col-9">
+                    <textarea class="form-control" id="idsTextArea" rows="3" wrap="off"
+                        placeholder="http://linked.data.gov.au/dataset/asgs2016/meshblock/50055290000"></textarea>
+                </div>
+            </div>
+            <button id="submitIdJob" type="button" class="btn btn-primary ml-auto d-block">
+                <span class="mx-4">Submit</span>
+                <!-- <i class="fas fa-desktop fa-lg ml-auto mr-4" style="position: relative;top: 2px;"></i> -->
+            </button>
+        </form>
+    {{/with}}
+</template>
