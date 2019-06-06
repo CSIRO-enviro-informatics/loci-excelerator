@@ -27,7 +27,7 @@ Template.jobCreator.onCreated(function () {
     })
     Tracker.autorun(function () {
         //show all old jobs by creating fake jobbuilders
-        var jobs = Jobs.find({hide: {$in: [null, false]}}, {fields: { _id: 1, created: 1, data: 1 }});
+        var jobs = Jobs.find({type: 'convert', hide: {$in: [null, false]}}, {fields: { _id: 1, created: 1, data: 1 }});
         jobs.forEach(job => {
             var builder = JobBuilders.findOne({$or: [{jobId: job._id}, {pendingId: true}]});
             if(!builder) {

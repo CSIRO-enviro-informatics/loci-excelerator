@@ -12,7 +12,7 @@
                     </div>
                 </div>
             </div>
-            {{#if hasStarted}}
+            <!-- {{#if hasStarted}}
                 <div class="col-sm-12">
                     <div class="job-panel shadow rounded-bottom">
                         <div class="jobs-holder shadow-sm bg-white">
@@ -43,7 +43,7 @@
 
                     </div>
                 </div>
-            {{/if}}
+            {{/if}} -->
         </div>
     </div>
 </template>
@@ -65,7 +65,7 @@
                         </button>
                         <div class="dropdown-menu">
                             {{#each datasets}}
-                                <a class="input-select dropdown-item {{isActive ../params.outputUri uri}}"
+                                <a class="output-select dropdown-item {{isActive ../params.outputUri uri}}"
                                     href="#">{{title}}</a>
                             {{/each}}
                         </div>
@@ -79,12 +79,12 @@
                         <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                             class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
                             <span class="small">
-                                {{outputDataset}}
+                                {{outputSubType}}
                             </span>
                         </button>
                         <div class="dropdown-menu">
                             {{#each datasets}}
-                                <a class="input-select dropdown-item {{isActive ../params.outputSubTypeUri uri}}"
+                                <a class="output-sub-type-select dropdown-item {{isActive ../params.outputSubTypeUri uri}}"
                                     href="#">{{title}}</a>
                             {{/each}}
                         </div>
@@ -105,7 +105,7 @@
                         </button>
                         <div class="dropdown-menu">
                             {{#each datasets}}
-                                <a class="input-select dropdown-item {{isActive ../params.filterUri uri}}"
+                                <a class="filter-select dropdown-item {{isActive ../params.filterUri uri}}"
                                     href="#">{{title}}</a>
                             {{/each}}
                         </div>
@@ -119,12 +119,12 @@
                         <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                             class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
                             <span class="small">
-                                {{outputDataset}}
+                                {{filterSubType}}
                             </span>
                         </button>
                         <div class="dropdown-menu">
                             {{#each datasets}}
-                                <a class="input-select dropdown-item {{isActive ../params.filterSubTypeUri uri}}"
+                                <a class="filter-sub-type-select dropdown-item {{isActive ../params.filterSubTypeUri uri}}"
                                     href="#">{{title}}</a>
                             {{/each}}
                         </div>
