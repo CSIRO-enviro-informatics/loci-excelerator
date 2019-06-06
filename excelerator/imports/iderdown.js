@@ -8,21 +8,20 @@ import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
 
-export function convert(job, cb) {
+export function getIds(job, cb) {
 
-    // var count = 1;
-    // var timerId = Meteor.setInterval(() => {
-    //     count++;
-    //     job.progress(count * 10, 100);
-    //     if (count == 10) {
-    //         Meteor.clearInterval(timerId);
-    //         // job.done();
-    //         // cb()
-    //         realWork();
-    //     }
-    // }, 2000);
+    var count = 1;
+    var timerId = Meteor.setInterval(() => {
+        count++;
+        job.progress(count * 10, 100);
+        if (count == 10) {
+            Meteor.clearInterval(timerId);
+            job.done();
+            cb()
+        }
+    }, 2000);
 
-    realWork(); //This was a function for the progress stuff above. Take it out 
+    // realWork(); //This was a function for the progress stuff above. Take it out 
 
     function realWork() {
 
