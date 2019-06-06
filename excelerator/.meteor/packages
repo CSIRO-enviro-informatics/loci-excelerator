@@ -27,3 +27,5 @@ ostrio:files
 vsivsi:job-collection
 raix:handlebar-helpers
 http
+arillo:flow-router-helpers
+zimme:active-route
