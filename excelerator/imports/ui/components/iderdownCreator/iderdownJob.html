@@ -1,0 +1,43 @@
+<template name="iderdownJob">
+    <div class="d-flex job-row align-items-center w-100 text-dark single-job">
+        <div class="filename-section elipse">
+            <i class="far fa-file-alt fa-lg text-success mr-2"></i>
+            <span class="">{{jobText}}</span>
+        </div>
+        <!-- <div class="size-section">
+            <span class="label">{{humanFileSize}}</span>
+        </div> -->
+        <div class="d-flex flex-row align-items-center justify-content-center" style="width: 200px;">
+            {{#if waiting}}
+                <i class="fas fa-spinner fa-pulse"></i>
+            {{/if}}
+            {{#if $eq status 'failed' }}
+                <span class="text-danger elipse" title="{{failedText}}">{{failedText}}</span>
+            {{/if}}
+            {{#if $eq status 'running' }}
+                <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 250px">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="{{progress.percent}}"
+                        aria-valuemin="0" aria-valuemax="100" style="width: {{progress.percent}}%;">
+                        <span class="sr-only">{{progress.percent}}% Complete</span>
+                    </div>
+                </div>
+            {{/if}}
+            {{#if $eq status 'completed' }}
+                {{#with outputfile.with}}
+                    <a href="{{link}}?download=true" download="{{name}}" target="_parent" type="{{type}}"
+                        class="d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                        <i class="fas fa-download fa-sm text-white-50"></i> Download
+                    </a>
+                {{/with}}
+            {{/if}}
+        </div>
+        <div class="status-section d-flex flex-column align-items-center">
+            <span class="ui-badge {{statusClass}}">{{status}}</span>
+        </div>
+        <div class="remove-section">
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+</template>

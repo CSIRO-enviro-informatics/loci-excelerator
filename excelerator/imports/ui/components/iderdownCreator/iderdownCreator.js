@@ -1,5 +1,5 @@
 import './iderdownCreator.html';
-
+import './iderdownJob';
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { App } from '../../../core.js'
@@ -23,11 +23,12 @@ Template.iderdownCreator.onCreated(function () {
     // Meteor.subscribe("jobs.all");
     Tracker.autorun(function () {
         Meteor.subscribe("jobs.id", App.dataId.get());
+        Meteor.subscribe('uploads.user', App.dataId.get());
     })
 });
 
 Template.iderdownCreator.helpers({
-    hasStarted() {
+    hasJobs() {
         return !!Jobs.find({ type: 'iderdown' }).count();
     },
     jobs() {
@@ -48,6 +49,9 @@ Template.iderdownForm.onCreated(function () {
     tpl.formState = new ReactiveVar({
         params: {}
     });
+
+    //testing
+    tpl.formState.set({ params: { outputUri: "http://linked.data.gov.au/dataset/asgs2016", outputTypeUri: "http://linked.data.gov.au/def/asgs#MeshBlock", filterUri: "http://linked.data.gov.au/dataset/asgs2016", filterTypeUri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1", idText: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/80108109107" } })
 })
 
 Template.iderdownForm.helpers({
@@ -83,8 +87,8 @@ Template.iderdownForm.helpers({
                 datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
             })
             datasetsUris.add(uri); //add self as we can convert internally
-            return Datasets.find({ 
-                uri: { $in: Array.from(datasetsUris) }                 
+            return Datasets.find({
+                uri: { $in: Array.from(datasetsUris) }
             }, { sort: { title: 1 } });
         }
     },
@@ -103,12 +107,12 @@ Template.iderdownForm.helpers({
         return a == b ? "active" : "";
     },
     isDisabled() {
-        var ready = this.params.filterUri && 
-        this.params.filterTypeUri && 
-        this.params.outputUri && 
-        this.params.outputTypeUri && 
-        this.params.idText;
-        return ready ?  {} : { disabled: "" };
+        var ready = this.params.filterUri &&
+            this.params.filterTypeUri &&
+            this.params.outputUri &&
+            this.params.outputTypeUri &&
+            this.params.idText;
+        return ready ? {} : { disabled: "" };
     },
 })
 
@@ -116,8 +120,8 @@ Template.iderdownForm.events({
     'click .output-select': function (e, t) {
         e.preventDefault();
         var data = t.formState.get()
-        data.params.outputUri = this.uri;        
-        data.params.outputTypeUri = DatasetTypes.findOne({datasetUri: this.uri}).uri; //select first
+        data.params.outputUri = this.uri;
+        data.params.outputTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
         t.formState.set(data);
     },
     'click .output-sub-type-select': function (e, t) {
@@ -130,7 +134,7 @@ Template.iderdownForm.events({
         e.preventDefault();
         var data = t.formState.get()
         data.params.filterUri = this.uri;
-        data.params.filterTypeUri = DatasetTypes.findOne({datasetUri: this.uri}).uri; //select first
+        data.params.filterTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
         t.formState.set(data);
     },
     'click .filter-sub-type-select': function (e, t) {
@@ -139,12 +143,21 @@ Template.iderdownForm.events({
         data.params.filterTypeUri = this.uri;
         t.formState.set(data);
     },
-    'keyup #idTextArea': function(e, t) {
+    'keyup #idTextArea': function (e, t) {
         e.preventDefault();
         var text = e.target.value;
         var data = t.formState.get()
         data.params.idText = text;
         t.formState.set(data);
+    },
+    'click #submitIdJob': function (e, t) {
+        var job = new Job(Jobs, 'iderdown', {
+            // email: "",
+            userId: App.dataId.get(),
+            params: this.params
+        });
+        job.save((err, id) => {
+            // t.formState.set({})
+        });
     }
-
 })
