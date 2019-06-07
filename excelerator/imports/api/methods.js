@@ -75,9 +75,10 @@ WHERE {
             }
         }
     },
-    addDatasetTypes() {
+    updateDatasetTypes() {
         if (!this.isSimulation) {
             this.unblock();
+            // DatasetTypes.remove({});
             if (!DatasetTypes.findOne()) {
                 console.log('Adding fake datatypes')
 
@@ -112,17 +113,17 @@ WHERE {
                 var geofabric = [{
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "Contracted Catchment",
-                    uri: "https://www.opengis.net/def/appschema/hy_features/hyf/HY_Catchment",
-                    withinType: "https://www.opengis.net/def/appschema/hy_features/hyf/HY_CatchmentAggregate"
+                    uri: "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
+                    withinType: "http://linked.data.gov.au/def/geofabric#RiverRegion"
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "River Region Catchment",
-                    uri: "https://www.opengis.net/def/appschema/hy_features/hyf/HY_CatchmentAggregate",
-                    withinType: "https://www.opengis.net/def/appschema/hy_features/hyf/HY_CatchmentAggregate"
+                    uri: "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                    withinType: "http://linked.data.gov.au/def/geofabric#DrainageDivision"
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
-                    title: "Contracted Catchment",
-                    uri: "https://www.opengis.net/def/appschema/hy_features/hyf/HY_Catchment",
+                    title: "Drainage Division",
+                    uri: "http://linked.data.gov.au/def/geofabric#DrainageDivision",
                 }];
 
                 var gnafCurrent = [{
@@ -133,8 +134,11 @@ WHERE {
 
                 var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05" }));
 
-                [asgs16, asgs11, geofabric, gnafCurrent, gnaf16].flat().forEach(x => {
+                var all = [].concat.apply([],[asgs16, asgs11, geofabric, gnafCurrent, gnaf16]);
+
+                all.forEach(x => {
                     DatasetTypes.insert(x);
+                    console.log(x);
                 })
             }
         }

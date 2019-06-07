@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor';
 Meteor.startup(() => {
     Meteor.call('updateLinksets', function () {
     });
-    Meteor.call('addDatasetTypes', function () {
-
+    Meteor.call('updateDatasetTypes', function () {
     });
 });
