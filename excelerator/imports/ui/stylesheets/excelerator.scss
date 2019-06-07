@@ -11,6 +11,14 @@ $input-font-size: 4px;
     min-height: 90vh;
 }
 
+.nav-link {
+    &.active {
+        span {
+            border-bottom: solid 3px $primary
+        }
+    }
+}
+
 #dropzone {
     font-size: 1.3rem;
     padding: 15px;
