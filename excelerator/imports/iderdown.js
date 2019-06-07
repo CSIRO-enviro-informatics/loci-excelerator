@@ -7,6 +7,7 @@ import Datasets from './api/datasets/datasets';
 import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
+import DatasetTypes from './api/datasetTypes/datasetTypes';
 
 export function getIds(job, cb) {
 
@@ -24,82 +25,87 @@ export function getIds(job, cb) {
     // realWork(); //This was a function for the progress stuff above. Take it out 
 
     function realWork() {
-
         var jobData = job.data;
 
-        var file = Uploads.findOne({ _id: jobData.from.fileId });
-        var inputFile = file.get('path');
         var outputFile = `${Meteor.settings.public.uploads.path}/converted_${file.get("_id")}`;
-
-        const inputStream = fs.createReadStream(inputFile);
         const outputStream = fs.createWriteStream(outputFile);
-        const csvStream = inputStream.pipe(Papa.parse(Papa.NODE_STREAM_INPUT));
 
         function failAndCleanUp(err) {
-            inputStream.destroy();
             outputStream.destroy();
-            csvStream.destroy();
             job.fail({
-                message:  Helpers.trimChar(Helpers.trimChar(err.message,'['), ']'),
+                message: Helpers.trimChar(Helpers.trimChar(err.message, '['), ']'),
                 code: err.code
             });
             cb();
         }
 
         //read all in memeory implementation
-        var data = [];
-        var skipped = [];
-
-        csvStream.on('data', function (item) {
-            data.push(item);
-        });
-
-        csvStream.on('error', (err) => {
+        try {
+            var result = processData(data, job, outputStream);
+            skipped = result.skipped;
+        } catch (err) {
             failAndCleanUp(err);
-        })
-
-        csvStream.on('end', Meteor.bindEnvironment(() => {
-            try {
-                var result = processData(data, job, outputStream);
-                skipped = result.skipped;
-            } catch (err) {
-                failAndCleanUp(err);
-            }
-        }))
+        }
 
         outputStream.on('error', (err) => {
             failAndCleanUp(err);
         })
 
         outputStream.on('finish', () => {
-            var metadata = file.get('meta');
-
             Uploads.addFile(outputFile, {
-                fileName: `converted - ${file.get('name')}`,
+                fileName: `${job._id}.csv`,
                 type: "text/csv",
                 meta: {
-                    userId: metadata.userId,
+                    userId: jobData.userId,
                     inputFileId: jobData.from.fileId,
                     jobId: job._id
                 },
             }, (err, fileObj) => {
                 if (err) {
-                    job.fail();
+                    failAndCleanUp(err);
                 } else {
                     var fileId = fileObj._id;
-                    job.done({ 
-                        fileId, 
-                        // skipped: skipped //not adding yet as could make job object too big
+                    job.done({
+                        fileId,
                     });
+                    cb();
                 }
-                cb();
             });
         })
     }
 }
 
-export function processData(data, job, outputStream) {
+function getPathToBaseType(datasetUri, classTypeUri) {
+    var currentType = DatasetTypes.findOne({ datasetUri, baseType: true });
+    if (!currentType)
+        throw new Meteor.Error(`No base type for dataset <${datasetUri}>`);
+    var typeHierarchy = [currentType];
+    while (currentType.uri != classTypeUri) {
+        currentType = DatasetTypes.findOne({ datasetUri, uri: currentType.withinType });
+        if (!currentType)
+            throw new Meteor.Error(`No conversion hierarchy found for dataset class <${classTypeUri}>`);
+        typeHierarchy.push(currentType);
+    }
+    return typeHierarchy;
+}
+
+export function processIdJob(job, outputStream) {
     var jobData = job.data;
+    var params = jobData.params;
+
+    var outputTypeHierarchy = getPathToBaseType(params.outputUri, params.outputTypeUri);
+    var filterTypeHierarchy = getPathToBaseType(params.filterUri, params.filterTypeUri);
+
+    //check that idText is valid
+    // a list
+    // all of the correct datatype filter
+
+    if (params.outputUri == params.filterUri) {
+
+    } else {
+
+    }
+
     var linkset = Linksets.findOne({ subjectsTarget: jobData.from.datasetUri, objectsTarget: jobData.to.datasetUri });
     var isReverse = false; //is the dataset going from subject to object
     if (!linkset) {
@@ -140,7 +146,7 @@ export function processData(data, job, outputStream) {
             var fromUri = row[jobData.from.columnIndex];
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
-            if(fromUri.indexOf(jobData.from.datasetUri) == -1)
+            if (fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
 
             var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
@@ -158,7 +164,7 @@ export function processData(data, job, outputStream) {
                                     prepareCache(dataCache, toObj.uri, row, jobData);
                                     if (hasAreas) {
                                         var proportionToGive = toObj.area / toObj.fromArea;
-                                        addToCache(dataCache, toObj.uri, row,  i,jobData, val => val * proportionToGive);
+                                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val * proportionToGive);
                                     } else {
                                         addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
                                         dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
@@ -251,7 +257,7 @@ export function processData(data, job, outputStream) {
 
     outputStream.end();
 
-    return {skipped};
+    return { skipped };
 }
 
 function prepareCache(dataCache, toUri, row, jobData) {

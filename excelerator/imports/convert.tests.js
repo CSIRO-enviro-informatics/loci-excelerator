@@ -93,7 +93,7 @@ if (Meteor.isServer) {
     })
 
 
-    class MochJob {
+    export class MochJob {
         constructor(_id, jobData) {
             this._id = _id;
             this.data = jobData;

@@ -78,30 +78,41 @@ WHERE {
     updateDatasetTypes() {
         if (!this.isSimulation) {
             this.unblock();
-            // DatasetTypes.remove({});
+            DatasetTypes.remove({});
             if (!DatasetTypes.findOne()) {
                 console.log('Adding fake datatypes')
 
+                //predcate are assumed uri isWithin parentUri, unless revesePredicate is true.
+
                 var asgs16 = [{
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
-                    title: "MeshBlock",
+                    title: "MeshBlock", 
                     uri: "http://linked.data.gov.au/def/asgs#MeshBlock",
-                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1"
+                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                    withinPredicate: "http://linked.data.gov.au/def/asgs#isStatisticalAreaLevel1Of",
+                    reversePredicate: true,
+                    baseType: true
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA1",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2"
+                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                    withinPredicate: "http://linked.data.gov.au/def/asgs#isStatisticalAreaLevel2Of",
+                    reversePredicate: true,
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA2",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
-                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3"
+                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
+                    withinPredicate: "http://linked.data.gov.au/def/asgs#isStatisticalAreaLevel3Of",
+                    reversePredicate: true,
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA3",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
-                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4"
+                    withinType: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
+                    withinPredicate: "http://linked.data.gov.au/def/asgs#isStatisticalAreaLevel4Of",
+                    reversePredicate: true,
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA4",
@@ -114,7 +125,8 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "Contracted Catchment",
                     uri: "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
-                    withinType: "http://linked.data.gov.au/def/geofabric#RiverRegion"
+                    withinType: "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                    baseType: true
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "River Region Catchment",
@@ -130,6 +142,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
                     title: "Address",
                     uri: "http://linked.data.gov.au/def/gnaf#Address",
+                    baseType: true
                 }]
 
                 var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05" }));
