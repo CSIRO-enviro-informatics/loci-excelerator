@@ -136,11 +136,11 @@
                     Ids
                 </div>
                 <div class="col-9">
-                    <textarea class="form-control" id="idsTextArea" rows="3" wrap="off"
-                        placeholder="http://linked.data.gov.au/dataset/asgs2016/meshblock/50055290000"></textarea>
+                    <textarea class="form-control" id="idTextArea" rows="3" wrap="off"
+                        placeholder="e.g http://linked.data.gov.au/dataset/asgs2016/meshblock/50055290000">{{params.idText}}</textarea>
                 </div>
             </div>
-            <button id="submitIdJob" type="button" class="btn btn-primary ml-auto d-block">
+            <button id="submitIdJob" type="button" class="btn btn-primary ml-auto d-block" {{isDisabled}}>
                 <span class="mx-4">Submit</span>
                 <!-- <i class="fas fa-desktop fa-lg ml-auto mr-4" style="position: relative;top: 2px;"></i> -->
             </button>

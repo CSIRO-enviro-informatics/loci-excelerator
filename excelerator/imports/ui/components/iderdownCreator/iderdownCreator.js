@@ -28,10 +28,10 @@ Template.iderdownCreator.onCreated(function () {
 
 Template.iderdownCreator.helpers({
     hasStarted() {
-        return !!App.Jobs.find({ type: 'iderdown' }).count();
+        return !!Jobs.find({ type: 'iderdown' }).count();
     },
     jobs() {
-        return App.Jobs.find({ type: 'iderdown' }, { sort: { created: 1, jobCreated: 1, _id: 1 } });
+        return Jobs.find({ type: 'iderdown' }, { sort: { created: 1, jobCreated: 1, _id: 1 } });
     },
 });
 
@@ -102,6 +102,14 @@ Template.iderdownForm.helpers({
     isActive(a, b) {
         return a == b ? "active" : "";
     },
+    isDisabled() {
+        var ready = this.params.filterUri && 
+        this.params.filterTypeUri && 
+        this.params.outputUri && 
+        this.params.outputTypeUri && 
+        this.params.idText;
+        return ready ?  {} : { disabled: "" };
+    },
 })
 
 Template.iderdownForm.events({
@@ -131,5 +139,12 @@ Template.iderdownForm.events({
         data.params.filterTypeUri = this.uri;
         t.formState.set(data);
     },
+    'keyup #idTextArea': function(e, t) {
+        e.preventDefault();
+        var text = e.target.value;
+        var data = t.formState.get()
+        data.params.idText = text;
+        t.formState.set(data);
+    }
 
 })
