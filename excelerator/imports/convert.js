@@ -81,7 +81,7 @@ export function convert(job, cb) {
                 meta: {
                     userId: metadata.userId,
                     inputFileId: jobData.from.fileId,
-                    jobId: job._id
+                    jobId: job._doc._id
                 },
             }, (err, fileObj) => {
                 if (err) {
