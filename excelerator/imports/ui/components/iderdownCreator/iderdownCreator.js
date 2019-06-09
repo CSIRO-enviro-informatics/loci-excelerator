@@ -51,7 +51,13 @@ Template.iderdownForm.onCreated(function () {
     });
 
     //testing
-    tpl.formState.set({ params: { outputUri: "http://linked.data.gov.au/dataset/asgs2016", outputTypeUri: "http://linked.data.gov.au/def/asgs#MeshBlock", filterUri: "http://linked.data.gov.au/dataset/asgs2016", filterTypeUri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1", idText: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/80108109107" } })
+    tpl.formState.set({ 
+        params: { 
+            outputUri: "http://linked.data.gov.au/dataset/asgs2016", 
+            outputTypeUri: "http://linked.data.gov.au/def/asgs#MeshBlock", 
+            filterUri: "http://linked.data.gov.au/dataset/asgs2016", 
+            filterTypeUri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1", 
+            idText: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804,\nhttp://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" } })
 })
 
 Template.iderdownForm.helpers({
