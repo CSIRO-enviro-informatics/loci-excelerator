@@ -13,23 +13,32 @@ import { stringify } from 'querystring';
 
 export function getIds(job, cb) {
 
-    var count = 1;
-    var timerId = Meteor.setInterval(() => {
-        count++;
-        job.progress(count * 10, 100);
-        if (count == 10) {
-            Meteor.clearInterval(timerId);
-            job.done();
-            cb()
-        }
-    }, 2000);
+    // var count = 1;
+    // var timerId = Meteor.setInterval(() => {
+    //     count++;
+    //     job.progress(count * 10, 100);
+    //     if (count == 10) {
+    //         Meteor.clearInterval(timerId);
+    //         job.done();
+    //         cb()
+    //     }
+    // }, 2000);
 
-    // realWork(); //This was a function for the progress stuff above. Take it out 
+    realWork(); //This was a function for the progress stuff above. Take it out 
 
     function realWork() {
         var jobData = job.data;
 
-        var outputFile = `${Meteor.settings.public.uploads.path}/converted_${file.get("_id")}`;
+        var outputType = DatasetTypes.findOne({ uri: jobData.params.outputTypeUri });
+        if (!outputType)
+            failAndCleanUp(new Meteor.Error(`Unknown output type: <${jobData.params.outputTypeUri}>`));
+        var filterType = DatasetTypes.findOne({ uri: jobData.params.filterTypeUri });
+        if (!filterType)
+            failAndCleanUp(new Meteor.Error(`Unknown filter type: <${jobData.params.filterTypeUri}>`));
+
+        var filename = `${outputType.title} by ${filterType.title} (${job._doc._id}).csv`;
+        console.log(filename);
+        var outputFile = `${Meteor.settings.public.uploads.path}/${filename}`;
         const outputStream = fs.createWriteStream(outputFile);
 
         function failAndCleanUp(err) {
@@ -41,25 +50,19 @@ export function getIds(job, cb) {
             cb();
         }
 
-        //read all in memeory implementation
-        try {
-            var result = processData(data, job, outputStream);
-        } catch (err) {
-            failAndCleanUp(err);
-        }
-
         outputStream.on('error', (err) => {
+            console.log(err);
             failAndCleanUp(err);
         })
 
         outputStream.on('finish', () => {
+            console.log("finished");
             Uploads.addFile(outputFile, {
-                fileName: `${job._id}.csv`,
+                fileName: filename,
                 type: "text/csv",
                 meta: {
                     userId: jobData.userId,
-                    inputFileId: jobData.from.fileId,
-                    jobId: job._id
+                    jobId: job._doc._id
                 },
             }, (err, fileObj) => {
                 if (err) {
@@ -73,6 +76,13 @@ export function getIds(job, cb) {
                 }
             });
         })
+
+        //read all in memeory implementation
+        try {
+            processIdJob(job, outputStream);
+        } catch (err) {
+            failAndCleanUp(err);
+        }
     }
 }
 
@@ -209,8 +219,6 @@ function getChildrenOf(filterTypeUri, datasetTypeParentUri, datasetTypeChildUri,
 WHERE {
 ${whereClauses}
 }`;
-
-    console.log(JSON.stringify(query));
 
     try {
         var result = getQueryResults(query);

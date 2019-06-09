@@ -41,18 +41,10 @@ Template.iderdownJob.helpers({
         return Uploads.findOne({ _id: this.result.fileId });
     },
     failedText() {
-        var jobId = Template.instance().data.jobId;
-        var job = Jobs.findOne({ _id: jobId });
-        return job.failures[0].message;
+        return this.failures[0].message;
     },
     waiting() {
-        if (this.status == 'submitted') {
-            var job = Jobs.findOne({ _id: this.jobId });
-            if (job)
-                return job.status == 'waiting' || job.status == 'ready';
-            else
-                return true;
-        }
+        return this.status == 'waiting' || this.status == 'ready';
     }
 });
 
