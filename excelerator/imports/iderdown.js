@@ -1,6 +1,7 @@
 import Uploads from './api/uploads/uploads'
 import { Meteor } from 'meteor/meteor'
 import fs from 'fs';
+import path from 'path'
 import Papa from 'papaparse';
 import Linksets from './api/linksets/linksets';
 import Datasets from './api/datasets/datasets';
@@ -8,6 +9,7 @@ import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
 import DatasetTypes from './api/datasetTypes/datasetTypes';
+import { stringify } from 'querystring';
 
 export function getIds(job, cb) {
 
@@ -87,6 +89,22 @@ function getPathToBaseType(datasetUri, classTypeUri) {
         typeHierarchy.push(currentType);
     }
     return typeHierarchy;
+}
+
+export function parseFilterIds(filterType, idText) {
+    var text = idText.replace(/,*\s+/g, ","); //make one long string
+    console.log(text);
+    var result = Papa.parse(text, { header: false });
+    var baseUri = "https://noideayet/";
+    return result.data[0].filter(x => !!x).map(x => {
+        var uri = x.trim();
+        if(!uri.startsWith('http'))
+            uri = path.join(baseUri, uri); //was just the id, not the uri
+        else if(uri.indexOf(baseUri) == -1)
+            throw new Meteor.Error(`Invalid filter object <${uri}> for given filter id Type <${filterType}>. Check your ID list`);
+        
+        return uri;
+    });    
 }
 
 export function processIdJob(job, outputStream) {

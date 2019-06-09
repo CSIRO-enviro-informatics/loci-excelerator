@@ -80,8 +80,6 @@ WHERE {
             this.unblock();
             DatasetTypes.remove({});
             if (!DatasetTypes.findOne()) {
-                console.log('Adding fake datatypes')
-
                 //predcate are assumed uri isWithin parentUri, unless revesePredicate is true.
 
                 var asgs16 = [{
@@ -151,7 +149,6 @@ WHERE {
 
                 all.forEach(x => {
                     DatasetTypes.insert(x);
-                    console.log(x);
                 })
             }
         }
