@@ -134,7 +134,8 @@ export function processIdJob(job, outputStream) {
             throw new Meteor.Error(`<${params.outputTypeUri}> is not in a child object of <${params.filterTypeUri}>, so we don't filter it.`)
 
         //write headers
-        outputStream.write(filterTypeHierarchy.find(x => x.uri == params.outputTypeUri).title + "\n");
+        var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => filterTypeHierarchy.find(x => x.uri == typeUri).title);
+        outputStream.write(Papa.unparse([headers], { header: false }) + "\n");
 
         var lastUpdate = new Date();
         filterUris.forEach((filter, i) => {
@@ -145,7 +146,8 @@ export function processIdJob(job, outputStream) {
             }
 
             var ids = getChildrenOf(filter, params.filterTypeUri, params.outputTypeUri, filterTypeHierarchy);
-            outputStream.write(ids.join('\n') + "\n");
+            var rows = ids.map(id => [id, filter]);
+            outputStream.write(Papa.unparse(rows, { header: false }) + "\n");
         })
     } else {
         throw new Meteor.Error("Cross walking downloads not yet implemented");
