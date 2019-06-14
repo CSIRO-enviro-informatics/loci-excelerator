@@ -36,14 +36,6 @@ Template.iderdownCreator.helpers({
     },
 });
 
-Template.iderdownCreator.events({
-    'click #submitJobs': async function (e, t) {
-    },
-    'click #addMore': function (e, t) {
-    }
-});
-
-
 Template.iderdownForm.onCreated(function () {
     var tpl = this;
     tpl.formState = new ReactiveVar({
@@ -51,13 +43,15 @@ Template.iderdownForm.onCreated(function () {
     });
 
     //testing
-    tpl.formState.set({ 
-        params: { 
-            outputUri: "http://linked.data.gov.au/dataset/asgs2016", 
-            outputTypeUri: "http://linked.data.gov.au/def/asgs#MeshBlock", 
-            filterUri: "http://linked.data.gov.au/dataset/asgs2016", 
-            filterTypeUri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1", 
-            idText: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804,\nhttp://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" } })
+    tpl.formState.set({
+        params: {
+            outputUri: "http://linked.data.gov.au/dataset/asgs2016",
+            outputTypeUri: "http://linked.data.gov.au/def/asgs#MeshBlock",
+            filterUri: "http://linked.data.gov.au/dataset/asgs2016",
+            filterTypeUri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+            idText: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804,\nhttp://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004"
+        }
+    })
 })
 
 Template.iderdownForm.helpers({
@@ -109,6 +103,17 @@ Template.iderdownForm.helpers({
     filterSubTypes() {
         return DatasetTypes.find({ datasetUri: this.params.filterUri });
     },
+    isFilterSubTypeDisabled(params, filterTypeUri) {
+        var outputTypeUri = params.outputTypeUri;
+        var childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: outputTypeUri });
+        childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: childType.withinType });
+        while(childType) {
+            if(childType.uri == filterTypeUri)
+                return "";
+            childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: childType.withinType });
+        }
+        return "disabled";
+    },
     isActive(a, b) {
         return a == b ? "active" : "";
     },
@@ -127,22 +132,30 @@ Template.iderdownForm.events({
         e.preventDefault();
         var data = t.formState.get()
         data.params.outputUri = this.uri;
-        data.params.outputTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
+        var outputType = DatasetTypes.findOne({ datasetUri: this.uri });
+        data.params.outputTypeUri = outputType.uri; //select first
+        
+        //set filter too, while we are not using the linksets
+        data.params.filterUri = this.uri;
+        data.params.filterTypeUri = outputType.withinType;
+        
         t.formState.set(data);
     },
     'click .output-sub-type-select': function (e, t) {
         e.preventDefault();
         var data = t.formState.get()
         data.params.outputTypeUri = this.uri;
+        var outputType = DatasetTypes.findOne({ uri: this.uri });
+        data.params.filterTypeUri = outputType.withinType;
         t.formState.set(data);
     },
-    'click .filter-select': function (e, t) {
-        e.preventDefault();
-        var data = t.formState.get()
-        data.params.filterUri = this.uri;
-        data.params.filterTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
-        t.formState.set(data);
-    },
+    // 'click .filter-select': function (e, t) {
+    //     e.preventDefault();
+    //     var data = t.formState.get()
+    //     data.params.filterUri = this.uri;
+    //     data.params.filterTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
+    //     t.formState.set(data);
+    // },
     'click .filter-sub-type-select': function (e, t) {
         e.preventDefault();
         var data = t.formState.get()

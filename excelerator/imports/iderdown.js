@@ -42,6 +42,7 @@ export function getIds(job, cb) {
         const outputStream = fs.createWriteStream(outputFile);
 
         function failAndCleanUp(err) {
+            console.log(err);
             outputStream.destroy();
             job.fail({
                 message: Helpers.trimChar(Helpers.trimChar(err.message, '['), ']'),
@@ -51,12 +52,10 @@ export function getIds(job, cb) {
         }
 
         outputStream.on('error', (err) => {
-            console.log(err);
             failAndCleanUp(err);
         })
 
         outputStream.on('finish', () => {
-            console.log("finished");
             Uploads.addFile(outputFile, {
                 fileName: filename,
                 type: "text/csv",

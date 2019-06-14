@@ -58,7 +58,7 @@
                 <div class="col-4">
                     <div class="dropdown">
                         <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100 ">
                             <span class="small">
                                 {{outputSubType}}
                             </span>
@@ -74,12 +74,12 @@
             </div>
             <div class="form-group form-row">
                 <div class="col-3">
-                    Filter by
+                    Filter by parent
                 </div>
                 <div class="col-4">
                     <div class="dropdown">
                         <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100">
+                            class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle w-100 disabled">
                             <span class="small">
                                 {{filterDataset}}
                             </span>
@@ -105,8 +105,9 @@
                         </button>
                         <div class="dropdown-menu">
                             {{#each filterSubTypes}}
-                                <a class="filter-sub-type-select dropdown-item {{isActive ../params.filterSubTypeUri uri}}"
-                                    href="#">{{title}}</a>
+                                <a class="filter-sub-type-select dropdown-item 
+                                {{isActive ../params.filterSubTypeUri uri}} 
+                                {{isFilterSubTypeDisabled ../params uri}}" href="#">{{title}}</a>
                             {{/each}}
                         </div>
                     </div>
