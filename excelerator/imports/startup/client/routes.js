@@ -11,14 +11,14 @@ import '../../ui/pages/not-found/not-found.js';
 FlowRouter.route('/', {
   name: 'App.home',
   action() {
-    BlazeLayout.render('App_body', { main: 'App_home' });
+    BlazeLayout.render('App_body', { main: 'App_home', helpBody: 'exceleratorHelp' });
   },
 });
 
 FlowRouter.route('/iderdown', {
   name: 'App.iderdown',
   action() {
-    BlazeLayout.render('App_body', { main: 'App_iderdown' });
+    BlazeLayout.render('App_body', { main: 'App_iderdown', helpBody: 'iderdownHelp' });
   },
 });
 
