@@ -20,13 +20,25 @@
 </template>
 
 <template name="exceleratorHelp">
+    <h5>Excelerator</h5>
+    <p>
+        A data reapportionment tool. This tool enables users to reapportion data referenced using one LocI data set
+        to another LocI dataset e.g. population count by ASGS Meshblocks reapportioned to Geofabric contracted
+        catchments.
+    </p>
     <h5>Input Files</h5>
+    At this stage, the files you upload for reaportionment must meet the following requirements:
     <ul>
-        <li>The file must be a CSV</li>
+        <li>The file must be in CSV format</li>
         <li>It must contain a header row</li>
-        <li>It must be under 1GB in size</li>
         <li>The first column must contain URI's of a loci dataset</li>
+        <li>No URI may be repeated</li>
+        <li>All other columns must contain valid values (ie only numbers, no letters, no blanks)</li>
+        <li>It must be under 100MB in size</li>
     </ul>
+
+    {{> stdOutputText}}
+
 </template>
 
 <template name="iderdownHelp">
@@ -61,30 +73,36 @@
         </tbody>
     </table>
 
-    <p>Once submitted, a job is created and placed on the job queue. The progress of the jobs should update in realtime in your browser. Subsequent returns to this service from the SAME browser will allow you to see the previously submitted jobs, and there progress. Progress is not lost or paused between visits.</p>
-
-    <p>When a job is completed, a file will be available for download from the job details row.</p>
+    {{> stdOutputText}}
 
     <br />
     <br />
     <h5>Example</h5>
     A simple example extracting the ASGS Meshblocks from 2 SA1s might look like this:
     <table class="table table-borderless table-sm">
-            <tbody>
-                <tr>
-                    <th scope="row">Dataset</th>
-                    <td>ASGS :: Meshblock</td>
-                </tr>
-                <tr>
-                    <th scope="row">Filter by parent</th>
-                    <td>ASGS :: SA1</td>
-                </tr>
-                <tr>
-                    <th scope="row">IDs</th>
-                    <td>http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804,
-                        <br/>http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004</td>
-                </tr>
-            </tbody>
-        </table>
+        <tbody>
+            <tr>
+                <th scope="row">Dataset</th>
+                <td>ASGS :: Meshblock</td>
+            </tr>
+            <tr>
+                <th scope="row">Filter by parent</th>
+                <td>ASGS :: SA1</td>
+            </tr>
+            <tr>
+                <th scope="row">IDs</th>
+                <td>http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804,
+                    <br />http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004</td>
+            </tr>
+        </tbody>
+    </table>
 
+</template>
+
+<template name="stdOutputText">
+    <p>Once submitted, a job is created and placed on the job queue. The progress of the jobs should update in realtime
+        in your browser. Subsequent returns to this service from the SAME browser will allow you to see the previously
+        submitted jobs, and their progress. Progress is not lost or paused between visits.</p>
+
+    <p>When a job is completed, a file will be available for download from the job details row.</p>
 </template>
