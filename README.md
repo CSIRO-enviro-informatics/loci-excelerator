@@ -1,6 +1,9 @@
 # loci-excelerator
 A reapportionment tool for the Loc-I project
 
+# IderDown
+A tool for downloading subsets of ID's based on within relationship in a given dataset. This feature can be found at the `/iderdown` url. ie Get me all meshblocks within a given SA2
+
 # Development
 ## Repository Structure
 **/excelerator** - Contains a meteor JS (http://meteor.com) application
