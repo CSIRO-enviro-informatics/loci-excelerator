@@ -71,6 +71,15 @@ if (Meteor.isServer) {
                 var expected = [{ "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12102128", "Area": "15998199.999999998", "Count": "0.5491605479865852" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12105134", "Area": "164297.87181459667", "Count": "3" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12105135", "Area": "123690.42415986011", "Count": "3" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12105138", "Area": "33570.640133920795", "Count": "2" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12105140", "Area": "156312.40464762232", "Count": "1" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12300915", "Area": "12709900", "Count": "0.0002572656354369502" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12300966", "Area": "86472700", "Count": "0.0012611729256635645" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12301469", "Area": "483040000", "Count": "0.009767697683447651" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12302323", "Area": "98806700", "Count": "0.0064178114668381435" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12302930", "Area": "199996", "Count": "0.6171744571070603" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12500009", "Area": "333674000", "Count": "0.01666869817164552" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12501673", "Area": "1503422000", "Count": "0.009079622181154956" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/12501961", "Area": "1106158000", "Count": "0.006680424200698144" }, { "geofabric": "http://linked.data.gov.au/dataset/geofabric/catchment/9551734", "Area": "516128", "Count": "0.000820040896546355" }];
                 chai.assert.sameDeepMembers(results.data, expected);
             })
+            it('can convert 2016 ACT Mesblock to geofab catchments without losing data', async function () {
+                this.timeout(300000);
+                var inputFile = 'testData/2016-act-mbs-with-area.csv';
+                var data = await getCSVRows(Assets.absoluteFilePath(inputFile));
+                var totalArea = data.reduce((mem, x) => mem + x.area, 0);
+                var results = await testLinksetConversionWithData(data, DATASETS.asgs2016, DATASETS.geofabric);
+                var resultArea = results.reduce((mem, x) => mem + x.area, 0);
+                chai.assert.equal(resultArea, totalArea, 'Area is not lost from conversion');
+            })
         })
 
         describe('Geofabric to ASGS16 (a reverse transformation)', function () {

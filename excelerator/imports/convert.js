@@ -40,6 +40,7 @@ export function convert(job, cb) {
             inputStream.destroy();
             outputStream.destroy();
             csvStream.destroy();
+            console.log(err);
             job.fail({
                 message:  Helpers.trimChar(Helpers.trimChar(err.message,'['), ']'),
                 code: err.code
@@ -139,6 +140,7 @@ export function processData(data, job, outputStream) {
 
         if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
+            Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
             if(fromUri.indexOf(jobData.from.datasetUri) == -1)
@@ -149,6 +151,7 @@ export function processData(data, job, outputStream) {
                 if (!predicateSuccess) {
                     if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
                         var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
+                        Helpers.devlog(`within or equals, #${toObjects.length}`);
 
                         if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                             //contains many
@@ -179,6 +182,7 @@ export function processData(data, job, outputStream) {
                         }
                     } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
                         var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
+                        Helpers.devlog(`overlaps, #${statements.length}`);
 
                         if (statements.length != 0) {
                             predicateSuccess = true;
@@ -204,7 +208,6 @@ export function processData(data, job, outputStream) {
     })
 
     job.progress(data.length, data.length);
-
 
     var hasUnknowns = !!Object.keys(dataCache).find(uri => dataCache[uri].unapportioned);
 

@@ -23,5 +23,8 @@ export default Helpers = {
         }
     
         return string;
-    }
+    },
+    devlog: function(msg) {
+        Meteor.isDevelopment && console.log(msg);
+    } 
 }

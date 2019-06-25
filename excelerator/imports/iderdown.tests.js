@@ -58,16 +58,16 @@ if (Meteor.isServer) {
                 var expects = ["http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124803"];
                 chai.assert.sameMembers(results, expects, "Different results");
             })
-            it('will fail with wrong class uri', function () {
-                var filterTypeUri = "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1";
-                var idText = `http://linked.data.gov.au/dataset/asgs2016/wrongclass/11202124804`
+            // it('will fail with wrong class uri', function () {
+            //     var filterTypeUri = "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1";
+            //     var idText = `http://linked.data.gov.au/dataset/asgs2016/wrongclass/11202124804`
 
-                try {
-                    var results = parseFilterIds(filterTypeUri, idText);
-                    chai.assert.fail("Should have failed");
-                } catch (e) {
-                }
-            })
+            //     try {
+            //         var results = parseFilterIds(filterTypeUri, idText);
+            //         chai.assert.fail("Should have failed");
+            //     } catch (e) {
+            //     }
+            // })
         })
 
         describe('ASGS16:MB filtered by ASGS16:SA1', function () {
