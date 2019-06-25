@@ -106,7 +106,7 @@ WHERE {
 //                     return false;
 //                 }
 
-                
+                console.log("Refreshing Datatypes List")
 
 
                 var asgs16 = [{

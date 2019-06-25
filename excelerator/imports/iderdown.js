@@ -85,23 +85,9 @@ export function getIds(job, cb) {
     }
 }
 
-function getPathToBaseType(datasetUri, classTypeUri) {
-    var currentType = DatasetTypes.findOne({ datasetUri, baseType: true });
-    if (!currentType)
-        throw new Meteor.Error(`No base type for dataset <${datasetUri}>`);
-    var typeHierarchy = [currentType];
-    while (currentType.uri != classTypeUri) {
-        currentType = DatasetTypes.findOne({ datasetUri, uri: currentType.withinType });
-        if (!currentType)
-            throw new Meteor.Error(`No conversion hierarchy found for dataset class <${classTypeUri}>`);
-        typeHierarchy.push(currentType);
-    }
-    return typeHierarchy;
-}
-
 export function parseFilterIds(filterType, idText) {
     var text = idText.replace(/,*\s+/g, ","); //make one long string
-    console.log(text);
+    // console.log(text);
     var result = Papa.parse(text, { header: false });
     var baseUri = "https://noideayet/";
     return result.data[0].filter(x => !!x).map(x => {
@@ -123,30 +109,36 @@ export function processIdJob(job, outputStream) {
         throw new Meteor.Error("FilterType must not be equal to Output type.")
     }
 
-    var filterTypeHierarchy = getPathToBaseType(params.filterUri, params.filterTypeUri);
-    var outputTypeHierarchy = getPathToBaseType(params.outputUri, params.outputTypeUri);
+    var outputType = DatasetTypes.findOne({uri: params.outputTypeUri});
+    if (!outputType) {
+        throw new Meteor.Error(`OutputType does not exist in database <${params.outputTypeUri}>.`)
+    }
+
     var filterUris = parseFilterIds(params.filterUri, params.idText);
 
     if (params.outputUri == params.filterUri) {
-        var inHierarchy = filterTypeHierarchy.find(x => x.uri == params.outputTypeUri);
+        var inHierarchy = outputType.withinTypes.indexOf(params.filterTypeUri) !== -1;
         if (!inHierarchy)
-            throw new Meteor.Error(`<${params.outputTypeUri}> is not in a child object of <${params.filterTypeUri}>, so we don't filter it.`)
+            throw new Meteor.Error(`<${params.outputTypeUri}> are never within objects of <${params.filterTypeUri}>, so we don't filter it.`)
 
         //write headers
-        var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => filterTypeHierarchy.find(x => x.uri == typeUri).title);
-        outputStream.write(Papa.unparse([headers], { header: false }) + "\n");
+        var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => DatasetTypes.findOne({uri: typeUri}).title);
+        outputStream.write(Papa.unparse([headers], { header: false, newline: '\n'  }) + "\n");
 
         var lastUpdate = new Date();
-        filterUris.forEach((filter, i) => {
+        filterUris.forEach((fUri, i) => {
             var sinceUpdate = new Date() - lastUpdate;
             if (sinceUpdate > 1000) {
                 lastUpdate = new Date();
                 job.progress(i, data.length);
             }
 
-            var ids = getChildrenOf(filter, params.filterTypeUri, params.outputTypeUri, filterTypeHierarchy);
-            var rows = ids.map(id => [id, filter]);
-            outputStream.write(Papa.unparse(rows, { header: false }) + "\n");
+            var ids = getObjectsWithin(fUri, params.outputTypeUri);
+            var rows = ids.map(id => [id, fUri]);
+            console.log(rows);
+            var rowText = Papa.unparse(rows, { header: false, newline: '\n' });
+            console.log(rowText);
+            outputStream.write( rowText + "\n");
         })
     } else {
         throw new Meteor.Error("Cross walking downloads not yet implemented");
@@ -199,29 +191,16 @@ export function processIdJob(job, outputStream) {
     outputStream.end();
 }
 
-function getChildrenOf(filterTypeUri, datasetTypeParentUri, datasetTypeChildUri, hierarchy) {
-    var done = false;
-    var whereClauses = hierarchy.reduce((mem, level, i) => {
-        if ((level.uri == datasetTypeChildUri || mem) && !done) {
-            var pred = level.withinPredicate;
-            var sub = !!mem ? `?tmp${i}` : "?child";
-            var obj = level.withinType == datasetTypeParentUri ? `<${filterTypeUri}>` : `?tmp${i + 1}`;
-            if (level.reversePredicate) {
-                mem += `    ${obj} <${pred}> ${sub} .\n`;
-            } else {
-                mem += `    ${sub} <${pred}> ${obj} .\n`;
-            }
-            done = (level.withinType == datasetTypeParentUri);
-        }
-        return mem;
-    }, "");
-
-    var query = `SELECT ?child
-WHERE {
-${whereClauses}
+function getObjectsWithin(containerUri, outputType) {
+    var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT *
+where {
+    ?child a <${outputType}> ;
+        geo:sfWithin <${containerUri}> .            
 }`;
 
     try {
+        //Need to watch for huge datasets here. For now no paging
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
