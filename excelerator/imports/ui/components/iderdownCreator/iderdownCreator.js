@@ -70,7 +70,7 @@ Template.iderdownForm.helpers({
         return dst ? dst.title : "Unknown";
     },
     outputSubTypes() {
-        return DatasetTypes.find({ datasetUri: this.params.outputUri });
+        return DatasetTypes.find({ datasetUri: this.params.outputUri, withinTypes: { $exists: true } });
     },
     filterDatasets() {
         var params = this.params;
@@ -104,15 +104,8 @@ Template.iderdownForm.helpers({
         return DatasetTypes.find({ datasetUri: this.params.filterUri });
     },
     isFilterSubTypeDisabled(params, filterTypeUri) {
-        var outputTypeUri = params.outputTypeUri;
-        var childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: outputTypeUri });
-        childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: childType.withinType });
-        while(childType) {
-            if(childType.uri == filterTypeUri)
-                return "";
-            childType = DatasetTypes.findOne({ datasetUri: params.filterUri, uri: childType.withinType });
-        }
-        return "disabled";
+        var outputTypeUri = DatasetTypes.findOne({ uri: params.outputTypeUri });
+        return outputTypeUri.withinTypes.indexOf(filterTypeUri) == -1 ? "disabled" : "";
     },
     isActive(a, b) {
         return a == b ? "active" : "";
@@ -134,11 +127,11 @@ Template.iderdownForm.events({
         data.params.outputUri = this.uri;
         var outputType = DatasetTypes.findOne({ datasetUri: this.uri });
         data.params.outputTypeUri = outputType.uri; //select first
-        
+
         //set filter too, while we are not using the linksets
         data.params.filterUri = this.uri;
-        data.params.filterTypeUri = outputType.withinType;
-        
+        data.params.filterTypeUri = outputType.withinTypes[0];
+
         t.formState.set(data);
     },
     'click .output-sub-type-select': function (e, t) {
@@ -146,7 +139,7 @@ Template.iderdownForm.events({
         var data = t.formState.get()
         data.params.outputTypeUri = this.uri;
         var outputType = DatasetTypes.findOne({ uri: this.uri });
-        data.params.filterTypeUri = outputType.withinType;
+        data.params.filterTypeUri = outputType.withinTypes[0];
         t.formState.set(data);
     },
     // 'click .filter-select': function (e, t) {
