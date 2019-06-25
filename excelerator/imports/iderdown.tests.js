@@ -51,13 +51,13 @@ if (Meteor.isServer) {
                 var expects = ["http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124803"];
                 chai.assert.sameMembers(results, expects, "Different results");
             })
-            it('can parse ID and URIS', function () {
-                var filterTypeUri = "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1";
-                var idText = `11202124804, 11202124803, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805`
-                var results = parseFilterIds(filterTypeUri, idText);
-                var expects = ["http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124803"];
-                chai.assert.sameMembers(results, expects, "Different results");
-            })
+            // it('can parse ID and URIS', function () {
+            //     var filterTypeUri = "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1";
+            //     var idText = `11202124804, 11202124803, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805`
+            //     var results = parseFilterIds(filterTypeUri, idText);
+            //     var expects = ["http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124805", "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124803"];
+            //     chai.assert.sameMembers(results, expects, "Different results");
+            // })
             // it('will fail with wrong class uri', function () {
             //     var filterTypeUri = "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1";
             //     var idText = `http://linked.data.gov.au/dataset/asgs2016/wrongclass/11202124804`
@@ -81,8 +81,8 @@ if (Meteor.isServer) {
                 };
                 var results = await testGetIds(params);
                 var expects = [
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900" },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800" },
+                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804"  },
+                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
                 ];
                 chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
             })
@@ -96,11 +96,10 @@ if (Meteor.isServer) {
                     "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004"
                 };
                 var results = await testGetIds(params);
-                console.log(JSON.stringify(results));
                 var expects = [
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900" },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800" },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876500" }
+                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876500", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" }
                 ];
                 chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
             })
@@ -119,9 +118,10 @@ if (Meteor.isServer) {
             "params": params
         });
 
-        var result = processIdJob(mochjob, outputStream);
+        processIdJob(mochjob, outputStream);
 
         var output = outputStream.toString();
+        console.log(JSON.stringify({fileout:output}));
 
         var parseResult = Papa.parse(output, {
             header: true,
