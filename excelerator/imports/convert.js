@@ -218,7 +218,7 @@ export function processData(data, job, outputStream) {
         if (hasUnknowns) {
             headerRow.push("Originating URI");
         }
-        var rowText = Papa.unparse([headerRow], { header: false });
+        var rowText = Papa.unparse([headerRow], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     }
 
@@ -249,7 +249,7 @@ export function processData(data, job, outputStream) {
 
         rowValues[jobData.from.columnIndex] = toUri;
 
-        var rowText = Papa.unparse([rowValues], { header: false });
+        var rowText = Papa.unparse([rowValues], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     })
 
