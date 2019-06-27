@@ -1,8 +1,8 @@
+import { Meteor } from 'meteor/meteor'
 const querystring = require('querystring');
-
-const SPARQL_URI = "http://db.loci.cat/repositories/cache"
-const USER = "ro";
-const PASSWORD = "locireadonly"; //Yes it's bad to have password here, but its only for the readonly user, and the data is public anyway
+const SPARQL_URI = Meteor.settings.graphdb.sparqlEndpoint;
+const USER = Meteor.settings.graphdb.user;
+const PASSWORD = Meteor.settings.graphdb.password;
 
 export const NS = {
     "loci": "PREFIX loci: <http://linked.data.gov.au/def/loci#>",
@@ -35,7 +35,7 @@ export const KNOWN_PREDS = {
     "transitiveSfOverlap": "http://linked.data.gov.au/def/geox#transitiveSfOverlap",
     "sfEquals": "http://www.opengis.net/ont/geosparql#sfEquals"
 }
-
+ 
 export function getQueryAsUrl(query) {
     var queryString = querystring.stringify({
         query

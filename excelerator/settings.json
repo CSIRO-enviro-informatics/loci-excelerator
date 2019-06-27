@@ -6,5 +6,10 @@
             "maxSizeText": "1GB",
             "path": "/loci/data/uploads"
         }
+    },
+    "graphdb": {
+        "sparqlEndpoint": "http://db.loci.cat/repositories/smallcache",
+        "user": "ro",
+        "password": "locireadonly"
     }
 }
