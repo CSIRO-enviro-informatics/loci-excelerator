@@ -129,6 +129,7 @@ export function processData(data, job, outputStream) {
     var dataCache = {};
     var skipped = [];
 
+    var startTime = new Date(); //not actually the start, but close enough for the timeout purposes
     var lastUpdate = new Date();
 
     data.forEach((row, i) => {
@@ -136,6 +137,12 @@ export function processData(data, job, outputStream) {
         if (sinceUpdate > 1000) {
             lastUpdate = new Date();
             job.progress(i, data.length);
+
+            //Time out only applies to this long running loop, reading and saving the files should be relatively quick compared to querying the DB in a loop
+            var runTime = (lastUpdate - startTime) / (60000); //convert to mins
+            if(runTime > Meteor.settings.public.jobTimeoutMins) {                
+                throw new Meteor.Error(`Forced Termination: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
+            }
         }
 
         if (!(jobData.hasHeaders && i == 0)) {

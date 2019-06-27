@@ -109,7 +109,7 @@ export function processIdJob(job, outputStream) {
         throw new Meteor.Error("FilterType must not be equal to Output type.")
     }
 
-    var outputType = DatasetTypes.findOne({uri: params.outputTypeUri});
+    var outputType = DatasetTypes.findOne({ uri: params.outputTypeUri });
     if (!outputType) {
         throw new Meteor.Error(`OutputType does not exist in database <${params.outputTypeUri}>.`)
     }
@@ -117,13 +117,15 @@ export function processIdJob(job, outputStream) {
     var filterUris = parseFilterIds(params.filterUri, params.idText);
 
     if (params.outputUri == params.filterUri) {
+        var startTime = new Date(); //not actually the start, but close enough for the timeout purposes
+
         var inHierarchy = outputType.withinTypes.indexOf(params.filterTypeUri) !== -1;
         if (!inHierarchy)
             throw new Meteor.Error(`<${params.outputTypeUri}> are never within objects of <${params.filterTypeUri}>, so we don't filter it.`)
 
         //write headers
-        var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => DatasetTypes.findOne({uri: typeUri}).title);
-        outputStream.write(Papa.unparse([headers], { header: false, newline: '\n'  }) + "\n");
+        var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => DatasetTypes.findOne({ uri: typeUri }).title);
+        outputStream.write(Papa.unparse([headers], { header: false, newline: '\n' }) + "\n");
 
         var lastUpdate = new Date();
         filterUris.forEach((fUri, i) => {
@@ -131,6 +133,12 @@ export function processIdJob(job, outputStream) {
             if (sinceUpdate > 1000) {
                 lastUpdate = new Date();
                 job.progress(i, data.length);
+
+                //Time out only applies to this long running loop, reading and saving the files should be relatively quick compared to querying the DB in a loop
+                var runTime = (lastUpdate - startTime) / (60000); //convert to mins
+                if (runTime > Meteor.settings.public.jobTimeoutMins) {
+                    throw new Meteor.Error(`Forced Termination: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
+                }
             }
 
             var ids = getObjectsWithin(fUri, params.outputTypeUri);
@@ -138,7 +146,7 @@ export function processIdJob(job, outputStream) {
             console.log(rows);
             var rowText = Papa.unparse(rows, { header: false, newline: '\n' });
             console.log(rowText);
-            outputStream.write( rowText + "\n");
+            outputStream.write(rowText + "\n");
         })
     } else {
         throw new Meteor.Error("Cross walking downloads not yet implemented");

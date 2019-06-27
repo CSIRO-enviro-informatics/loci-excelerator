@@ -71,7 +71,7 @@ WHERE {
 
                 return true;
             } catch (e) {
-                console.log(e)
+                console.log("Error reading the linksets from the DB. Probably missing data in DB");
                 return false;
             }
         }
