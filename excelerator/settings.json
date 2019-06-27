@@ -2,8 +2,8 @@
     "public": {
         "siteName": "Excelerator",
         "uploads": {
-            "maxSize": 1073741824,
-            "maxSizeText": "1GB",
+            "maxSize": 104857600,
+            "maxSizeText": "100MB",
             "path": "/loci/data/uploads"
         },
         "jobTimeoutMins": 60

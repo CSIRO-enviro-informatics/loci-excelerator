@@ -1,10 +1,16 @@
 {
   "public": {
-      "siteName": "Excelerator",
-      "uploads": {
-          "maxSize": 1073741824,
-          "maxSizeText": "1GB",
-          "path": "/files"
-      }
+    "siteName": "Excelerator",
+    "uploads": {
+      "maxSize": 104857600,
+      "maxSizeText": "100MB",
+      "path": "/files"
+    },
+    "jobTimeoutMins": 60
+  },
+  "graphdb": {
+    "sparqlEndpoint": "http://db.loci.cat/repositories/smallcache",
+    "user": "ro",
+    "password": "locireadonly"
   }
 }
