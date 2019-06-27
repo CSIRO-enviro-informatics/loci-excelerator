@@ -116,13 +116,55 @@ if (Meteor.isServer) {
                         "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/WA"
                     };
                     var results = await testGetIds(params);
-                    var expects = [
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                    ];
                     chai.assert.lengthOf(results.data, 12, "Expected 12 SA1's in WA")
                 })
             })
+
+            describe('Geofabric: RR filtered by DD', function () {
+                it('can extract approriate SA1 ids from WA', async function () {
+                    var params = {
+                        "outputUri": DATASETS.geofabric,
+                        "outputTypeUri": "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                        "filterUri": DATASETS.geofabric,
+                        "filterTypeUri": "http://linked.data.gov.au/def/geofabric#DrainageDivision",
+                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400215"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.lengthOf(results.data, 12, "Expected 12 RRs given DD");
+                })
+            })
+
+            describe('Geofabric: CC filtered by DD', function () {
+                it('can extract approriate SA1 ids from WA', async function () {
+                    var params = {
+                        "outputUri": DATASETS.geofabric,
+                        "outputTypeUri": "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
+                        "filterUri": DATASETS.geofabric,
+                        "filterTypeUri": "http://linked.data.gov.au/def/geofabric#DrainageDivision",
+                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400215"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    //Need actual value here once results are available in cache
+                    //chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                })
+            })
+
+            describe('GNAF 2016-05: Addresses filtered by locality', function () {
+                it('can extract approriate Address from locality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf16,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
+                        "filterUri": DATASETS.gnaf16,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                        "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/ACT570"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
+            })
+
+            
         })
     })
 
