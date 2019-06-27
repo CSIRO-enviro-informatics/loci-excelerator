@@ -11,6 +11,8 @@ import { isNumber } from 'util';
 import DatasetTypes from './api/datasetTypes/datasetTypes';
 import { stringify } from 'querystring';
 
+const DEFAULT_PAGE_SIZE = 1000;
+
 export function getIds(job, cb) {
 
     // var count = 1;
@@ -86,10 +88,10 @@ export function getIds(job, cb) {
 }
 
 export function parseFilterIds(filterType, idText) {
-    var text = idText.replace(/,*\s+/g, ","); //make one long string
+    var text = idText.replace(/,*\s+/g, ","); //make one long string, allow spaces,
     // console.log(text);
     var result = Papa.parse(text, { header: false });
-    var baseUri = "https://noideayet/";
+    // var baseUri = "https://noideayet/";
     return result.data[0].filter(x => !!x).map(x => {
         var uri = x.trim();
         // if (!uri.startsWith('http'))
@@ -143,9 +145,7 @@ export function processIdJob(job, outputStream) {
 
             var ids = getObjectsWithin(fUri, params.outputTypeUri);
             var rows = ids.map(id => [id, fUri]);
-            console.log(rows);
             var rowText = Papa.unparse(rows, { header: false, newline: '\n' });
-            console.log(rowText);
             outputStream.write(rowText + "\n");
         })
     } else {
@@ -200,23 +200,35 @@ export function processIdJob(job, outputStream) {
 }
 
 function getObjectsWithin(containerUri, outputType) {
-    var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-SELECT *
-where {
-    ?child a <${outputType}> ;
-        geo:sfWithin <${containerUri}> .            
-}`;
+    var page = 0;
+    var pageSize = DEFAULT_PAGE_SIZE;
+    var moreResults = true;
+    var matches = [];
+    while (moreResults) {
+        var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        SELECT *
+        where {
+            ?child a <${outputType}> ;
+                geo:sfWithin <${containerUri}> .            
+        }
+        ORDER BY ?child
+        LIMIT ${pageSize}
+        OFFSET ${pageSize * page}`;
 
-    try {
-        //Need to watch for huge datasets here. For now no paging
-        var result = getQueryResults(query);
-        var json = JSON.parse(result.content);
-        var bindings = json.results.bindings;
-        var matches = bindings.map(b => b.child.value);
-        return matches;
-    } catch (e) {
-        throw e;
+        try {
+            var result = getQueryResults(query);
+            var json = JSON.parse(result.content);
+            var bindings = json.results.bindings;
+            var batchMatches = bindings.map(b => b.child.value);
+            // console.log(`Page #${page} returned ${bindings.length} results`);
+            matches = matches.concat(batchMatches);
+            moreResults = (bindings.length == pageSize); //if full page keep going
+        } catch (e) {
+            throw e;
+        }
+        page++;
     }
+    return matches;
 }
 
 function getOverlapStatements(fromUri, isReverse, predUri, linksetUri) {

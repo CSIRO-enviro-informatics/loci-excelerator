@@ -70,44 +70,59 @@ if (Meteor.isServer) {
             // })
         })
 
-        describe('ASGS16:MB filtered by ASGS16:SA1', function () {
-            it('can extract approriate ids from a single SA1', async function () {
-                var params = {
-                    "outputUri": DATASETS.asgs2016,
-                    "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
-                    "filterUri": DATASETS.asgs2016,
-                    "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                    "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804"
-                };
-                var results = await testGetIds(params);
-                var expects = [
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804"  },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                ];
-                chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+        describe("SMALL CACHE TESTS", function() {
+            describe('ASGS16:MB filtered by ASGS16:SA1', function () {
+                it('can extract approriate ids from a single SA1', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804"
+                    };
+                    var results = await testGetIds(params);
+                    var expects = [
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    ];
+                    chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+                })
+
+                it('can extract approriate ids from multiple SA1s', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004"
+                    };
+                    var results = await testGetIds(params);
+                    var expects = [
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876500", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" }
+                    ];
+                    chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+                })
             })
 
-            it('can extract approriate ids from multiple SA1s', async function () {
-                var params = {
-                    "outputUri": DATASETS.asgs2016,
-                    "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
-                    "filterUri": DATASETS.asgs2016,
-                    "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                    "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004"
-                };
-                var results = await testGetIds(params);
-                var expects = [
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                    { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876500", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" }
-                ];
-                chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+            describe('ASGS16:SA1 filtered by ASGS16:STATE', function () {
+                it('can extract approriate SA1 ids from WA', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StateOrTerritory",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/WA"
+                    };
+                    var results = await testGetIds(params);
+                    var expects = [
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    ];
+                    chai.assert.lengthOf(results.data, 12, "Expected 12 SA1's in WA")
+                })
             })
-        })
-
-
-        describe('ASGS16 to GNAF (a reverse transformation)', function () {
-            it('can convert reverse sfWithin statments')
         })
     })
 
@@ -121,7 +136,7 @@ if (Meteor.isServer) {
         processIdJob(mochjob, outputStream);
 
         var output = outputStream.toString();
-        console.log(JSON.stringify({fileout:output}));
+        // console.log(JSON.stringify({fileout:output}));
 
         var parseResult = Papa.parse(output, {
             header: true,
