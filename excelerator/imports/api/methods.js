@@ -11,6 +11,7 @@ Meteor.methods({
     updateLinksets() {
         if (!this.isSimulation) {
             this.unblock();
+            // DatasetTypes.remove({});
 
             var linksetQuery =
                 `PREFIX void: <http://rdfs.org/ns/void#>

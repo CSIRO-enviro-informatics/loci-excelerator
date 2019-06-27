@@ -5,7 +5,8 @@
             "maxSize": 1073741824,
             "maxSizeText": "1GB",
             "path": "/loci/data/uploads"
-        }
+        },
+        "jobTimeoutMins": 1
     },
     "graphdb": {
         "sparqlEndpoint": "http://db.loci.cat/repositories/smallcache",

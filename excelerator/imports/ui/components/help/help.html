@@ -27,18 +27,54 @@
         catchments.
     </p>
     <h5>Input Files</h5>
-    At this stage, the files you upload for reaportionment must meet the following requirements:
+    At this stage (prototype), the files you upload for reaportionment must meet the following requirements:
     <ul>
         <li>The file must be in CSV format</li>
         <li>It must contain a header row</li>
         <li>The first column must contain URI's of a loci dataset</li>
+        <li>The selected 'from' dataset must be the same as the URI's in the first column</li>
         <li>No URI may be repeated</li>
         <li>All other columns must contain valid values (ie only numbers, no letters, no blanks)</li>
         <li>It must be under 100MB in size</li>
+        <li>Only base types from each dataset can be used from, and convert to:
+            <ul>
+                <li>ASGS - Meshblocks</li>
+                <li>Geofabric - Contracted Catchments</li>
+                <li>GNAS - Addresses</li>
+            </ul>
+        </li>
+        <li>There is time limit of {{limit}} minutes per job. This limit is simply to allow multiple users to test and use the prototype without long waiting periods.</li>
     </ul>
 
     {{> stdOutputText}}
 
+    <br />
+    <br />
+    <h5>Example File</h5>
+    <table class="table table-sm table-bordered" style="font-size: 0.7rem;">
+        <tbody>
+            <tr>
+                <th>Address</th>
+                <th>Block Area</th>
+                <th>Population</th>
+            </tr>
+            <tr>
+                <td>http://linked.data.gov.au/dataset/gnaf-2016-05/address/GAWA_146787909</td>
+                <td>10000</td>
+                <td>4</td>
+            </tr>
+            <tr>
+                <td>http://linked.data.gov.au/dataset/gnaf-2016-05/address/GAWA_146787910</td>
+                <td>40350</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>http://linked.data.gov.au/dataset/gnaf-2016-05/address/GAWA_146787911</td>
+                <td>540350</td>
+                <td>14</td>
+            </tr>
+        </tbody>
+    </table>
 </template>
 
 <template name="iderdownHelp">
@@ -74,6 +110,7 @@
     </table>
 
     {{> stdOutputText}}
+    <p><strong>Note</strong>: There is time limit of {{limit}} minutes per job. This limit is simply to allow multiple users to test and use the prototype without long waiting periods.</p>
 
     <br />
     <br />
