@@ -139,7 +139,7 @@ export function processIdJob(job, outputStream) {
                 //Time out only applies to this long running loop, reading and saving the files should be relatively quick compared to querying the DB in a loop
                 var runTime = (lastUpdate - startTime) / (60000); //convert to mins
                 if (runTime > Meteor.settings.public.jobTimeoutMins) {
-                    throw new Meteor.Error(`Forced Termination: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
+                    throw new Meteor.Error(`Prototype Constrained Timeout: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
                 }
             }
 
