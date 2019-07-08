@@ -162,6 +162,7 @@ export function processData(data, job, outputStream) {
 
                         if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                             //contains many
+                            console.log(toObjects[0])
                             if (toObjects.length != 0) {
                                 predicateSuccess = true;
                                 var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
@@ -308,47 +309,47 @@ function getStatements(fromUri, isReverse, predUri, linksetUri) {
 PREFIX loci: <http://linked.data.gov.au/def/loci#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geox: <http://linked.data.gov.au/def/geox#>
+PREFIX data: <http://linked.data.gov.au/def/datatype/> 
 PREFIX dct: <http://purl.org/dc/terms/>
 prefix dbp: <http://dbpedia.org/property/>
 PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
 PREFIX qu: <http://qudt.org/schema/qudt#unit>
 
-SELECT *
+SELECT distinct ?s ?to (min(?subjectArea) as ?subjectAreaUnique) (min(?objectArea) as ?objectAreaUnique)
 WHERE {
     ?s dct:isPartOf <${linksetUri}> ;
        rdf:subject ${subjectText} ;
        rdf:predicate <${predUri}> ;
        rdf:object ${objectText} .
-    ${toVar} rdf:type ?t .
     OPTIONAL {
-        ${subjectText} dbp:area [ nv: ?subArea ;
-                        qu: ?subUnit ] .
+        ${subjectText} geox:hasAreaM2 [ data:value ?subjectArea ].  
     }
     OPTIONAL {
-        ${objectText} dbp:area [ nv: ?objArea ;
-                        qu: ?objUnit ] .    
+        ${objectText} geox:hasAreaM2 [ data:value ?objectArea ].  
     }
-}`;
+ } group by ?s ?to 
+`;
 
     try {
+        console.log(query)
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
         var matches = bindings.map(b => {
             var matchObj = {
                 uri: b.to.value,
-                type: b.t.value
             };
             if (isReverse) {
-                if (b.objArea)
-                    matchObj.fromArea = b.objArea.value;
-                if (b.subArea)
-                    matchObj.area = b.subArea.value;
+                if (b.objectAreaUnique)
+                    matchObj.fromArea = b.objectAreaUnique.value;
+                if (b.subjectAreaUnique)
+                    matchObj.area = b.subjectAreaUnique.value;
             } else {
-                if (b.subArea)
-                    matchObj.fromArea = b.subArea.value;
-                if (b.objArea)
-                    matchObj.area = b.objArea.value;
+                if (b.subjectAreaUnique)
+                    matchObj.fromArea = b.subjectAreaUnique.value;
+                if (b.objectAreaUnique)
+                    matchObj.area = b.objectAreaUnique.value;
             }
             return matchObj;
         })
