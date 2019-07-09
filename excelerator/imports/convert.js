@@ -170,6 +170,9 @@ export function processData(data, job, outputStream) {
                                     prepareCache(dataCache, toObj.uri, row, jobData);
                                     if (hasAreas) {
                                         var proportionToGive = toObj.area / toObj.fromArea;
+                                        //Never distribute more than the amount that the from object has to give
+                                        if (proportionToGive > 1)
+                                            proportionToGive = 1;
                                         addToCache(dataCache, toObj.uri, row,  i,jobData, val => val * proportionToGive);
                                     } else {
                                         addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
