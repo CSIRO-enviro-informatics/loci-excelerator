@@ -112,6 +112,7 @@ export function processData(data, job, outputStream) {
     if (!linkset) {
         throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
     }
+    
 
     var fromDataset = Datasets.findOne({ uri: jobData.from.datasetUri });
     if (!fromDataset) {
@@ -121,8 +122,7 @@ export function processData(data, job, outputStream) {
     if (!toDataset) {
         throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
     }
-
-
+    
     var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
@@ -157,7 +157,7 @@ export function processData(data, job, outputStream) {
             predicates.forEach(pred => {
                 if (!predicateSuccess) {
                     if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
-                        var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
+                        var toObjects = getStatements(fromUri, isReverse, linkset.uri);
                         Helpers.devlog(`within or equals, #${toObjects.length}`);
 
                         if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
@@ -299,8 +299,7 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     });
 }
 
-
-function getStatements(fromUri, isReverse, predUri, linksetUri) {
+function getStatements(fromUri, isReverse, linksetUri) {
     var toVar = "?to";
     var wrappedUri = `<${fromUri}>`;
     var subjectText = isReverse ? toVar : wrappedUri;
@@ -315,20 +314,29 @@ PREFIX dct: <http://purl.org/dc/terms/>
 prefix dbp: <http://dbpedia.org/property/>
 PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
 PREFIX qu: <http://qudt.org/schema/qudt#unit>
+PREFIX qb4st: <http://www.w3.org/ns/qb4st/>
+PREFIX epsg: <http://www.opengis.net/def/crs/EPSG/0/>
 
-SELECT distinct ?s ?to (min(?subjectArea) as ?subjectAreaUnique) (min(?objectArea) as ?objectAreaUnique)
+SELECT distinct ?s ?to ?toParent (min(?subjectArea) as ?subjectAreaUnique) (min(?objectArea) as ?objectAreaUnique)
 WHERE {
     ?s dct:isPartOf <${linksetUri}> ;
        rdf:subject ${subjectText} ;
-       rdf:predicate <${predUri}> ;
+       rdf:predicate ?p;
        rdf:object ${objectText} .
     OPTIONAL {
-        ${subjectText} geox:hasAreaM2 [ data:value ?subjectArea ].  
+        ${subjectText} geox:hasAreaM2 [ data:value ?subjectArea; qb4st:crs epsg:3577 ].  
     }
     OPTIONAL {
-        ${objectText} geox:hasAreaM2 [ data:value ?objectArea ].  
+        ${objectText} geox:hasAreaM2 [ data:value ?objectArea; qb4st:crs epsg:3577 ].  
     }
- } group by ?s ?to 
+    OPTIONAL { FILTER (?toParent != ${wrappedUri})
+        ?s1 dct:isPartOf <${linksetUri}> ;
+            rdf:subject ?toParent ;
+            rdf:predicate geo:sfContains ;
+            rdf:object ?to .
+    }
+    FILTER (?p = geo:sfContains || ?p = geo:sfWithin)
+ } group by ?s ?to ?p ?toParent
 `;
 
     try {
@@ -337,8 +345,15 @@ WHERE {
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
         var matches = bindings.map(b => {
-            var matchObj = {
-                uri: b.to.value,
+            if (b.toParent) {
+                var matchObj = {
+                    uri: b.toParent.value,
+                }
+            }
+            else {
+                var matchObj = {
+                    uri: b.to.value
+                }
             };
             if (isReverse) {
                 if (b.objectAreaUnique)
