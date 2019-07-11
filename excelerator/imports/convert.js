@@ -112,7 +112,6 @@ export function processData(data, job, outputStream) {
     if (!linkset) {
         throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
     }
-    
 
     var fromDataset = Datasets.findOne({ uri: jobData.from.datasetUri });
     if (!fromDataset) {
@@ -144,7 +143,7 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Forced Termination: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
             }
         }
-
+        predicateSuccess = false;
         if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
             Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
@@ -152,15 +151,8 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
             if(fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
-
-            var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
-            predicates.forEach(pred => {
-                if (!predicateSuccess) {
-                    if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
                         var toObjects = getStatements(fromUri, isReverse, linkset.uri);
                         Helpers.devlog(`within or equals, #${toObjects.length}`);
-
-                        if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                             //contains many
                             console.log(toObjects[0])
                             if (toObjects.length != 0) {
@@ -180,38 +172,6 @@ export function processData(data, job, outputStream) {
                                     }
                                 });
                             }
-                        } else {
-                            //assuming within one
-                            if (toObjects.length > 1) {
-                                throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
-                            } else if (toObjects.length == 1) {
-                                predicateSuccess = true;
-                                var toUri = toObjects[0].uri;
-                                prepareCache(dataCache, toUri, row, jobData);
-                                addToCache(dataCache, toUri, row, i, jobData, val => val);
-                            }
-                        }
-                    } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
-                        var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
-                        Helpers.devlog(`overlaps, #${statements.length}`);
-
-                        if (statements.length != 0) {
-                            predicateSuccess = true;
-                            statements.forEach(statement => {
-                                if (statement.to.unit != statement.from.unit || statement.to.unit != statement.overlap.unit)
-                                    throw new Meteor.Error(`Mixed units found for conversion of row ${i}, col ${colIndex}. We dont handle that yet`);
-
-                                var toUri = statement.to.uri;
-                                prepareCache(dataCache, toUri, row, jobData);
-                                var proportionToGive = statement.overlap.area / statement.from.area;
-                                addToCache(dataCache, toUri, row, i, jobData, val => val * proportionToGive);
-                            })
-                        }
-                    } else {
-                        throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
-                    }
-                }
-            })
             if (!predicateSuccess) {
                 skipped.push(row); //this row had no matches
             }
