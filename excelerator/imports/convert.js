@@ -121,8 +121,7 @@ export function processData(data, job, outputStream) {
     if (!toDataset) {
         throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
     }
-
-
+    
     var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
@@ -144,7 +143,7 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Forced Termination: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
             }
         }
-
+        predicateSuccess = false;
         if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
             Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
@@ -152,16 +151,10 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
             if(fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
-
-            var predicateSuccess = false; //making assumption that only a single predicate should match a given row.
-            predicates.forEach(pred => {
-                if (!predicateSuccess) {
-                    if (pred === KNOWN_PREDS.sfWithin || pred === KNOWN_PREDS.sfEquals) {
-                        var toObjects = getStatements(fromUri, isReverse, pred, linkset.uri);
+                        var toObjects = getStatements(fromUri, isReverse, linkset.uri);
                         Helpers.devlog(`within or equals, #${toObjects.length}`);
-
-                        if (isReverse && pred === KNOWN_PREDS.sfWithin) { //the reverse is the same for sfequals
                             //contains many
+                            console.log(toObjects[0])
                             if (toObjects.length != 0) {
                                 predicateSuccess = true;
                                 var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
@@ -169,6 +162,9 @@ export function processData(data, job, outputStream) {
                                     prepareCache(dataCache, toObj.uri, row, jobData);
                                     if (hasAreas) {
                                         var proportionToGive = toObj.area / toObj.fromArea;
+                                        //Never distribute more than the amount that the from object has to give
+                                        if (proportionToGive > 1)
+                                            proportionToGive = 1;
                                         addToCache(dataCache, toObj.uri, row,  i,jobData, val => val * proportionToGive);
                                     } else {
                                         addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
@@ -176,38 +172,6 @@ export function processData(data, job, outputStream) {
                                     }
                                 });
                             }
-                        } else {
-                            //assuming within one
-                            if (toObjects.length > 1) {
-                                throw new Meteor.Error(`${fromUri} in row ${i} has many '${pred}' statements, and we dont handle that yet.`);
-                            } else if (toObjects.length == 1) {
-                                predicateSuccess = true;
-                                var toUri = toObjects[0].uri;
-                                prepareCache(dataCache, toUri, row, jobData);
-                                addToCache(dataCache, toUri, row, i, jobData, val => val);
-                            }
-                        }
-                    } else if (pred === KNOWN_PREDS.transitiveSfOverlap) {
-                        var statements = getOverlapStatements(fromUri, isReverse, pred, linkset.uri);
-                        Helpers.devlog(`overlaps, #${statements.length}`);
-
-                        if (statements.length != 0) {
-                            predicateSuccess = true;
-                            statements.forEach(statement => {
-                                if (statement.to.unit != statement.from.unit || statement.to.unit != statement.overlap.unit)
-                                    throw new Meteor.Error(`Mixed units found for conversion of row ${i}, col ${colIndex}. We dont handle that yet`);
-
-                                var toUri = statement.to.uri;
-                                prepareCache(dataCache, toUri, row, jobData);
-                                var proportionToGive = statement.overlap.area / statement.from.area;
-                                addToCache(dataCache, toUri, row, i, jobData, val => val * proportionToGive);
-                            })
-                        }
-                    } else {
-                        throw new Meteor.Error(`Unknown predicate in linkset ${pred}`);
-                    }
-                }
-            })
             if (!predicateSuccess) {
                 skipped.push(row); //this row had no matches
             }
@@ -298,8 +262,7 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     });
 }
 
-
-function getStatements(fromUri, isReverse, predUri, linksetUri) {
+function getStatements(fromUri, isReverse, linksetUri) {
     var toVar = "?to";
     var wrappedUri = `<${fromUri}>`;
     var subjectText = isReverse ? toVar : wrappedUri;
@@ -308,47 +271,63 @@ function getStatements(fromUri, isReverse, predUri, linksetUri) {
 PREFIX loci: <http://linked.data.gov.au/def/loci#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geox: <http://linked.data.gov.au/def/geox#>
+PREFIX data: <http://linked.data.gov.au/def/datatype/> 
 PREFIX dct: <http://purl.org/dc/terms/>
 prefix dbp: <http://dbpedia.org/property/>
 PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
 PREFIX qu: <http://qudt.org/schema/qudt#unit>
+PREFIX qb4st: <http://www.w3.org/ns/qb4st/>
+PREFIX epsg: <http://www.opengis.net/def/crs/EPSG/0/>
 
-SELECT *
+SELECT distinct ?s ?to ?toParent (min(?subjectArea) as ?subjectAreaUnique) (min(?objectArea) as ?objectAreaUnique)
 WHERE {
     ?s dct:isPartOf <${linksetUri}> ;
        rdf:subject ${subjectText} ;
-       rdf:predicate <${predUri}> ;
+       rdf:predicate ?p;
        rdf:object ${objectText} .
-    ${toVar} rdf:type ?t .
     OPTIONAL {
-        ${subjectText} dbp:area [ nv: ?subArea ;
-                        qu: ?subUnit ] .
+        ${subjectText} geox:hasAreaM2 [ data:value ?subjectArea; qb4st:crs epsg:3577 ].  
     }
     OPTIONAL {
-        ${objectText} dbp:area [ nv: ?objArea ;
-                        qu: ?objUnit ] .    
+        ${objectText} geox:hasAreaM2 [ data:value ?objectArea; qb4st:crs epsg:3577 ].  
     }
-}`;
+    OPTIONAL { FILTER (?toParent != ${wrappedUri})
+        ?s1 dct:isPartOf <${linksetUri}> ;
+            rdf:subject ?toParent ;
+            rdf:predicate geo:sfContains ;
+            rdf:object ?to .
+    }
+    FILTER (?p = geo:sfContains || ?p = geo:sfWithin)
+ } group by ?s ?to ?p ?toParent
+`;
 
     try {
+        console.log(query)
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
         var matches = bindings.map(b => {
-            var matchObj = {
-                uri: b.to.value,
-                type: b.t.value
+            if (b.toParent) {
+                var matchObj = {
+                    uri: b.toParent.value,
+                }
+            }
+            else {
+                var matchObj = {
+                    uri: b.to.value
+                }
             };
             if (isReverse) {
-                if (b.objArea)
-                    matchObj.fromArea = b.objArea.value;
-                if (b.subArea)
-                    matchObj.area = b.subArea.value;
+                if (b.objectAreaUnique)
+                    matchObj.fromArea = b.objectAreaUnique.value;
+                if (b.subjectAreaUnique)
+                    matchObj.area = b.subjectAreaUnique.value;
             } else {
-                if (b.subArea)
-                    matchObj.fromArea = b.subArea.value;
-                if (b.objArea)
-                    matchObj.area = b.objArea.value;
+                if (b.subjectAreaUnique)
+                    matchObj.fromArea = b.subjectAreaUnique.value;
+                if (b.objectAreaUnique)
+                    matchObj.area = b.objectAreaUnique.value;
             }
             return matchObj;
         })

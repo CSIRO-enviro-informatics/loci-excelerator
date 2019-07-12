@@ -30,26 +30,32 @@ WHERE {
                 var datsetUris = new Set();
 
                 linksets.forEach(lsprops => {
-                    var linksetObj = {
-                        uri: lsprops[0].linkset.value,
-                        title: lsprops.find(x => x.pred.value == PROPS.title).obj.value,
-                        description: lsprops.find(x => x.pred.value == PROPS.description).obj.value,
-                        subjectsTarget: lsprops.find(x => x.pred.value == PROPS.subjectsTarget).obj.value,
-                        objectsTarget: lsprops.find(x => x.pred.value == PROPS.objectsTarget).obj.value,
-                        modified: lsprops.find(x => x.pred.value == PROPS.modified).obj.value,
-                        issued: lsprops.find(x => x.pred.value == PROPS.issued).obj.value,
-                        linkPredicates: lsprops.filter(x => x.pred.value == PROPS.linkPredicate).map(x => x.obj.value)
+                    try {
+                        var linksetObj = {
+                            uri: lsprops[0].linkset.value,
+                            title: lsprops.find(x => x.pred.value == PROPS.title).obj.value,
+                            description: lsprops.find(x => x.pred.value == PROPS.description).obj.value,
+                            subjectsTarget: lsprops.find(x => x.pred.value == PROPS.subjectsTarget).obj.value,
+                            objectsTarget: lsprops.find(x => x.pred.value == PROPS.objectsTarget).obj.value,
+                            modified: lsprops.find(x => x.pred.value == PROPS.modified).obj.value,
+                            issued: lsprops.find(x => x.pred.value == PROPS.issued).obj.value,
+                            linkPredicates: lsprops.filter(x => x.pred.value == PROPS.linkPredicate).map(x => x.obj.value)
+                        }
+
+                        datsetUris.add(linksetObj.subjectsTarget);
+                        datsetUris.add(linksetObj.objectsTarget);
+
+                        var exists = Linkset.findOne({ uri: linksetObj.uri })
+                        if (exists) {
+                            Linkset.update(exists._id, { $set: linksetObj })
+                        } else {
+                            Linkset.insert(linksetObj);
+                        }
+                    } catch (e) {
+                        console.log("Error reading the linksets from the DB. Probably missing data in DB");
+                        return false;
                     }
 
-                    datsetUris.add(linksetObj.subjectsTarget);
-                    datsetUris.add(linksetObj.objectsTarget);
-
-                    var exists = Linkset.findOne({ uri: linksetObj.uri })
-                    if (exists) {
-                        Linkset.update(exists._id, { $set: linksetObj })
-                    } else {
-                        Linkset.insert(linksetObj);
-                    }
                 })
 
                 datsetUris.forEach(uri => {
@@ -82,30 +88,30 @@ WHERE {
             DatasetTypes.remove({});
             if (!DatasetTypes.findOne()) {
                 //predcate are assumed uri isWithin parentUri, unless revesePredicate is true.
-//                 var typesQuery =
-//                     `PREFIX reg: <http://purl.org/linked-data/registry#>
-// SELECT *
-// WHERE {
-//     ?reg a reg:Register ;
-//             reg:register ?rofr ;
-//             reg:containedItemClass ?cic
-// }`;
-//                 try {
-//                     var result = getQueryResults(typesQuery);
-//                     var json = JSON.parse(result.content);
-//                     var bindings = json.results.bindings;
-//                     var types = bingings.map(b => {
-//                         var uri = b['cic'].value;
-//                         return {
-//                             uri,
-//                             title: uri.split(/[#/]+/).pop(),
-//                             datasetUri: b['rofr'].value
-//                         }
-//                     })
-//                 } catch (e) {
-//                     console.log(e)
-//                     return false;
-//                 }
+                //                 var typesQuery =
+                //                     `PREFIX reg: <http://purl.org/linked-data/registry#>
+                // SELECT *
+                // WHERE {
+                //     ?reg a reg:Register ;
+                //             reg:register ?rofr ;
+                //             reg:containedItemClass ?cic
+                // }`;
+                //                 try {
+                //                     var result = getQueryResults(typesQuery);
+                //                     var json = JSON.parse(result.content);
+                //                     var bindings = json.results.bindings;
+                //                     var types = bingings.map(b => {
+                //                         var uri = b['cic'].value;
+                //                         return {
+                //                             uri,
+                //                             title: uri.split(/[#/]+/).pop(),
+                //                             datasetUri: b['rofr'].value
+                //                         }
+                //                     })
+                //                 } catch (e) {
+                //                     console.log(e)
+                //                     return false;
+                //                 }
 
                 console.log("Refreshing Datatypes List")
 
