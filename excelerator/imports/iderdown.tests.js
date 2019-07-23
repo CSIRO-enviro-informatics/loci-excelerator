@@ -70,22 +70,24 @@ if (Meteor.isServer) {
             // })
         })
 
-        describe("SMALL CACHE TESTS", function() {
-            describe('ASGS16:MB filtered by ASGS16:SA1', function () {
+        describe("FULL CACHE TESTS", function() {
+            describe('ASGS16', function () {
                 it('can extract approriate ids from a single SA1', async function () {
                     var params = {
                         "outputUri": DATASETS.asgs2016,
                         "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
                         "filterUri": DATASETS.asgs2016,
                         "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804"
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/80109110406"
                     };
                     var results = await testGetIds(params);
-                    var expects = [
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                    ];
-                    chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+                    // var expects = [
+                    //     { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    //     { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
+                    // ];
+                    // chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 3, "Expected 3");
                 })
 
                 it('can extract approriate ids from multiple SA1s', async function () {
@@ -94,54 +96,125 @@ if (Meteor.isServer) {
                         "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
                         "filterUri": DATASETS.asgs2016,
                         "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004"
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/80106106908, http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/80109110406"
                     };
                     var results = await testGetIds(params);
-                    var expects = [
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11204384900", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876800", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/11202124804" },
-                        { "MeshBlock": "http://linked.data.gov.au/dataset/asgs2016/meshblock/11205876500", "SA1": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/10402109004" }
-                    ];
-                    chai.assert.sameDeepMembers(results.data, expects, "Expected the same")
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 3 + 4, "Expected 7");
                 })
-            })
 
-            describe('ASGS16:SA1 filtered by ASGS16:STATE', function () {
-                it('can extract approriate SA1 ids from WA', async function () {
+                it('can extract approriate SA1 ids from a single SA2', async function () {
                     var params = {
                         "outputUri": DATASETS.asgs2016,
                         "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
                         "filterUri": DATASETS.asgs2016,
-                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StateOrTerritory",
-                        "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/WA"
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel2/801031031"
                     };
                     var results = await testGetIds(params);
-                    chai.assert.lengthOf(results.data, 12, "Expected 12 SA1's in WA")
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 2, "Expected 2");
+                })
+
+                it('can extract approriate SA2 ids from a single SA3', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel3/80103"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 5, "Expected 5");
+                })
+
+                it('can extract approriate SA3 ids from a single SA4', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel4/801"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 10, "Expected 10");
+                })
+
+                it('can extract approriate SA4 ids from a single STATE', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StateOrTerritory",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/ACT"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    chai.assert.lengthOf(results.data, 1, "Expected 1");
+                })
+                
+                it('can extract approriate MB ids from SA2 (transitive within)', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#MeshBlock",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel2/801031031"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.lengthOf(results.data, 13, "Expected 13")
+                })
+
+                it('can extract approriate STATE ids from AUSTRALIA', async function () {
+                    var params = {
+                        "outputUri": DATASETS.asgs2016,
+                        "outputTypeUri": "http://linked.data.gov.au/def/asgs#StateOrTerritory",
+                        "filterUri": DATASETS.asgs2016,
+                        "filterTypeUri": "http://linked.data.gov.au/def/asgs#Australia",
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/australia/036"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.lengthOf(results.data, 9, "Expected 9 States")
                 })
             })
 
-            describe('Geofabric: RR filtered by DD', function () {
-                it('can extract approriate SA1 ids from WA', async function () {
+            describe('Geofabric', function () {
+                it('can extract approriate CC ids from RR', async function () {
+                    var params = {
+                        "outputUri": DATASETS.geofabric,
+                        "outputTypeUri": "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
+                        "filterUri": DATASETS.geofabric,
+                        "filterTypeUri": "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                        "idText": "http://linked.data.gov.au/dataset/geofabric/riverregion/9400390"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    //Need actual value here once results are available in cache
+                    // chai.assert.notEqual(results.data.length, 2, "Expecting 2");
+                })
+
+                it('can extract approriate RR ids from DD', async function () {
                     var params = {
                         "outputUri": DATASETS.geofabric,
                         "outputTypeUri": "http://linked.data.gov.au/def/geofabric#RiverRegion",
                         "filterUri": DATASETS.geofabric,
                         "filterTypeUri": "http://linked.data.gov.au/def/geofabric#DrainageDivision",
-                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400215"
+                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400207"
                     };
                     var results = await testGetIds(params);
-                    chai.assert.lengthOf(results.data, 12, "Expected 12 RRs given DD");
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 12, "Expected 12 RRs given DD");
                 })
-            })
 
-            describe('Geofabric: CC filtered by DD', function () {
-                it('can extract approriate SA1 ids from WA', async function () {
+                it('can extract approriate CC ids from DD (transitive within)', async function () {
                     var params = {
                         "outputUri": DATASETS.geofabric,
                         "outputTypeUri": "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
                         "filterUri": DATASETS.geofabric,
                         "filterTypeUri": "http://linked.data.gov.au/def/geofabric#DrainageDivision",
-                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400215"
+                        "idText": "http://linked.data.gov.au/dataset/geofabric/drainagedivision/9400207"
                     };
                     var results = await testGetIds(params);
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
@@ -150,20 +223,34 @@ if (Meteor.isServer) {
                 })
             })
 
-            describe('GNAF 2016-05: Addresses filtered by locality', function () {
+            describe('GNAF Current', function () {
                 it('can extract approriate Address from locality', async function () {
                     var params = {
-                        "outputUri": DATASETS.gnaf16,
+                        "outputUri": DATASETS.gnaf,
                         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
-                        "filterUri": DATASETS.gnaf16,
+                        "filterUri": DATASETS.gnaf,
                         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
-                        "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/ACT570"
+                        "idText": "http://linked.data.gov.au/dataset/gnaf/locality/ACT328"
                     };
                     var results = await testGetIds(params);
-                    chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
                 })
-            })
 
+                // it('can extract approriate Address from locality', async function () {
+                //     var params = {
+                //         "outputUri": DATASETS.gnaf16,
+                //         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
+                //         "filterUri": DATASETS.gnaf16,
+                //         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                //         "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/ACT570"
+                //     };
+                //     var results = await testGetIds(params);
+                //     chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                //     // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                // })
+
+            })
             
         })
     })
