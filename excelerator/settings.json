@@ -9,7 +9,7 @@
         "jobTimeoutMins": 10
     },
     "graphdb": {
-        "sparqlEndpoint": "http://db.loci.cat/repositories/smallcache",
+        "sparqlEndpoint": "http://db.loci.cat:7200/repositories/repo-test-1",
         "user": "ro",
         "password": "locireadonly"
     }
