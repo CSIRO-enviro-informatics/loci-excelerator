@@ -206,14 +206,14 @@ function getObjectsWithin(containerUri, outputType) {
     var matches = [];
     while (moreResults) {
         var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-        SELECT *
-        where {
-            ?child a <${outputType}> ;
-                geo:sfWithin <${containerUri}> .            
-        }
-        ORDER BY ?child
-        LIMIT ${pageSize}
-        OFFSET ${pageSize * page}`;
+SELECT *
+where {
+    ?child geo:sfWithin+ <${containerUri}> ;
+        a <${outputType}> .            
+}
+ORDER BY ?child
+LIMIT ${pageSize}
+OFFSET ${pageSize * page}`;
 
         try {
             var result = getQueryResults(query);
