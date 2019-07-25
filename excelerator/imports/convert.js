@@ -42,7 +42,7 @@ export function convert(job, cb) {
             csvStream.destroy();
             console.log(err);
             job.fail({
-                message:  Helpers.trimChar(Helpers.trimChar(err.message,'['), ']'),
+                message: Helpers.trimChar(Helpers.trimChar(err.message, '['), ']'),
                 code: err.code
             });
             cb();
@@ -89,8 +89,8 @@ export function convert(job, cb) {
                     job.fail();
                 } else {
                     var fileId = fileObj._id;
-                    job.done({ 
-                        fileId, 
+                    job.done({
+                        fileId,
                         // skipped: skipped //not adding yet as could make job object too big
                     });
                 }
@@ -121,7 +121,7 @@ export function processData(data, job, outputStream) {
     if (!toDataset) {
         throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
     }
-    
+
     var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
@@ -139,7 +139,7 @@ export function processData(data, job, outputStream) {
 
             //Time out only applies to this long running loop, reading and saving the files should be relatively quick compared to querying the DB in a loop
             var runTime = (lastUpdate - startTime) / (60000); //convert to mins
-            if(runTime > Meteor.settings.public.jobTimeoutMins) {                
+            if (runTime > Meteor.settings.public.jobTimeoutMins) {
                 throw new Meteor.Error(`Prototype Constrained Timeout: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
             }
         }
@@ -149,29 +149,32 @@ export function processData(data, job, outputStream) {
             Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
-            if(fromUri.indexOf(jobData.from.datasetUri) == -1)
+            if (fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
-                        var toObjects = getStatements(fromUri, isReverse, linkset.uri);
-                        Helpers.devlog(`within or equals, #${toObjects.length}`);
-                            //contains many
-                            console.log(toObjects[0])
-                            if (toObjects.length != 0) {
-                                predicateSuccess = true;
-                                var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
-                                toObjects.forEach(toObj => {
-                                    prepareCache(dataCache, toObj.uri, row, jobData);
-                                    if (hasAreas) {
-                                        var proportionToGive = toObj.area / toObj.fromArea;
-                                        //Never distribute more than the amount that the from object has to give
-                                        if (proportionToGive > 1)
-                                            proportionToGive = 1;
-                                        addToCache(dataCache, toObj.uri, row,  i,jobData, val => val * proportionToGive);
-                                    } else {
-                                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
-                                        dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
-                                    }
-                                });
-                            }
+            var toObjects = getStatements(fromUri, isReverse, linkset.uri);
+            Helpers.devlog(`within or equals, #${toObjects.length}`);
+            //contains many
+            console.log(toObjects[0])
+            if (toObjects.length != 0) {
+                predicateSuccess = true;
+                var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
+                toObjects.forEach(toObj => {
+                    prepareCache(dataCache, toObj.uri, row, jobData);
+                    if (hasAreas) {
+                        var proportionToGive = toObj.area / toObj.fromArea;
+                        //Never distribute more than the amount that the from object has to give
+                        //The area of the two objects is only ever greater in the circumstance of a within, so really
+                        //this test is for the presence of a within statement, in which case we want to fully allocate the
+                        //value to the target.
+                        if (proportionToGive > 1)
+                            proportionToGive = 1;
+                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val * proportionToGive);
+                    } else {
+                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
+                        dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
+                    }
+                });
+            }
             if (!predicateSuccess) {
                 skipped.push(row); //this row had no matches
             }
@@ -226,7 +229,7 @@ export function processData(data, job, outputStream) {
 
     outputStream.end();
 
-    return {skipped};
+    return { skipped };
 }
 
 function prepareCache(dataCache, toUri, row, jobData) {
@@ -267,6 +270,8 @@ function getStatements(fromUri, isReverse, linksetUri) {
     var wrappedUri = `<${fromUri}>`;
     var subjectText = isReverse ? toVar : wrappedUri;
     var objectText = isReverse ? wrappedUri : toVar;
+    //I feel this query it prone to breaking the second the datasource introduces unexpected relationships
+    //Like unexpected inferred relationships, for example transitiveOvelaps will break it and have to be explicitely removed
     var query = `PREFIX void: <http://rdfs.org/ns/void#>
 PREFIX loci: <http://linked.data.gov.au/def/loci#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -303,7 +308,7 @@ WHERE {
 `;
 
     try {
-        console.log(query)
+        // console.log(query)
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
