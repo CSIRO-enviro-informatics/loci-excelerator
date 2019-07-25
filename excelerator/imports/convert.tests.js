@@ -21,6 +21,25 @@ if (Meteor.isServer) {
             Meteor.call('updateLinksets');
         });
 
+        describe('Full Cache', function() {
+            describe('Missing/Overlapping Apportionment', function () {
+                it('CC with missing MB should be warned about missing data', async function () {
+                    var results = await testLinksetConversion('testData/CCsWithMissingMBs-TAS River.csv', DATASETS.geofabric, DATASETS.asgs2016);
+                    chai.assert.include(results.data[0]['asgs2016'], "Warning", "Should be a warning");
+                })
+    
+                it('MB with badly aligned CCs should be warned about missing data', async function () {
+                    var results = await testLinksetConversion('testData/MBBadOverlapWithCC-Base Straight.csv', DATASETS.asgs2016, DATASETS.geofabric);
+                    chai.assert.include(results.data[0]['geofabric'], "Warning", "Should be a warning");
+                })            
+                
+                it('MB with badly aligned CCs but within tollerance should be ok', async function () {
+                    var results = await testLinksetConversion('testData/MBBadOverlapWithCCButWithinThreshold-Base Straight.csv', DATASETS.asgs2016, DATASETS.geofabric);
+                    chai.assert.notInclude(results.data[0]['geofabric'], "Warning", "Should NOT be a warning");
+                })                            
+            })    
+        })
+
         describe('expected errors', function () {
             it('will skip on unknown URIs', async function () {
                 var results = await testLinksetConversion('testData/mini-gnaf-mb16-bad-uri.csv', DATASETS.gnaf, DATASETS.asgs2016);
