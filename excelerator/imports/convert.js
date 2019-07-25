@@ -8,6 +8,8 @@ import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
 
+const MASS_BALANCE_TOLLERANCE_PERC = 0.5;
+
 export function convert(job, cb) {
 
     // var count = 1;
@@ -146,15 +148,15 @@ export function processData(data, job, outputStream) {
         predicateSuccess = false;
         if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
-            Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
+            // Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
             if (fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
             var toObjects = getStatements(fromUri, isReverse, linkset.uri);
-            Helpers.devlog(`within or equals, #${toObjects.length}`);
-            //contains many
-            console.log(toObjects[0])
+            // Helpers.devlog(`within or equals, #${toObjects.length}`);
+            //contains many 
+            // console.log(toObjects[0])
             if (toObjects.length != 0) {
                 predicateSuccess = true;
                 var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
@@ -193,6 +195,51 @@ export function processData(data, job, outputStream) {
             headerRow.push("Originating URI");
         }
         var rowText = Papa.unparse([headerRow], { header: false, newline: '\n' });
+        outputStream.write(rowText + "\n");
+    }
+
+    //Check for mass balance and write out approriate messages if out.
+    var originalTotals = data.reduce((mem, row, i) => {
+        if (i != 0) { //skip headers
+            row.forEach((colVal, colIndex) => {
+                if (colIndex != jobData.from.columnIndex) {
+                    if (isNaN(colVal))
+                        throw new Meteor.Error(`Value "${colVal}" found in row ${i}, col ${colIndex} is not a number.`);
+                    mem[colIndex++] += +colVal;
+                }
+            });
+        }
+        return mem;
+    }, new Array(data[0].length).fill(0));
+    Helpers.devlog(`Old Totals: ${JSON.stringify(originalTotals)}`);
+
+    var apportionedTotals = Object.values(dataCache).reduce((mem, rowData) => {
+        rowData.forEach((tots, dataIndex) => {
+            if (dataIndex != jobData.from.columnIndex) 
+                mem[dataIndex] += tots.total;
+        });
+        return mem;
+    }, new Array(data[0].length).fill(0));
+    Helpers.devlog(`New Totals: ${JSON.stringify(apportionedTotals)}`);
+
+    var percDiffs = originalTotals.map((orgTotal, colIndex) => {
+        var newTotal = apportionedTotals[colIndex];
+        if(orgTotal == 0) {
+            if(newTotal == 0) 
+                return 0;
+            else 
+                return Math.abs((newTotal - orgTotal) / newTotal) * 100.0;
+        }
+        return Math.abs((orgTotal - newTotal) / orgTotal) * 100.0;
+    })
+
+    Helpers.devlog(`Mass Balance Diffs: ${JSON.stringify(percDiffs)}`);
+
+    var percDiff = percDiffs.find(diff => diff > MASS_BALANCE_TOLLERANCE_PERC);
+    if (percDiff) {
+        var row = new Array(data[0].length).fill("");
+        row[0] = `Warning: The input source values were not completely apportioned to outputs. This happens when the output dataset does not completely cover the input dataset spatially. ${percDiff.toFixed(3)}% of the data was left unassigned.`;
+        var rowText = Papa.unparse([row], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     }
 
