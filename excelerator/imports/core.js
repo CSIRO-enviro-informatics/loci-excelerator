@@ -4,6 +4,9 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import { Mongo } from 'meteor/mongo';
 import { Random } from 'meteor/random'
 import Helpers from './helpers'
+import Datasets from './api/datasets/datasets';
+import Papa from 'papaparse';
+
 
 const JobBuilders = new Mongo.Collection(null);
 window.JobBuilders = JobBuilders;
@@ -44,17 +47,27 @@ export const App = {
     addNewBuilder(file) {
         var clientSideFileId = Random.id();
         this.files[clientSideFileId] = file;
-        JobBuilders.insert({
-            created: new Date(),
-            fileId: clientSideFileId,
-            fileName: file.name,
-            fileSize: file.size,
-            hasHeaders: true,
-            params: {
-                columnIndex: 0, //default for now
-            },
-            status: 'incomplete'
-        })
+
+        function insertBuilder(inputUri) {
+            JobBuilders.insert({
+                created: new Date(),
+                fileId: clientSideFileId,
+                fileName: file.name,
+                fileSize: file.size,
+                hasHeaders: true,
+                params: {
+                    columnIndex: 0, //default for now
+                    inputUri
+                },
+                status: 'incomplete'
+            })
+        }
+
+        guessFileInputDataset(file).then(inputUri => {
+            insertBuilder(inputUri);
+        }).catch(err => {
+            insertBuilder();
+        });
     },
     addNewBuilderFromJob(job) {
         JobBuilders.insert({
@@ -108,10 +121,29 @@ addListener(window, ['drop'], (e) => {
 
     var dataTransfer = e.dataTransfer;
     if (dataTransfer && dataTransfer.files.length > 0) {
-        for( var i = 0; i < dataTransfer.files.length; i++ ) {
+        for (var i = 0; i < dataTransfer.files.length; i++) {
             App.addNewBuilder(dataTransfer.files[i]);
         }
-    } 
+    }
 
     return false;
 });
+
+async function guessFileInputDataset(file) {
+    return new Promise((resolve, reject) => {
+        var rowCount = 0;
+        var rows = [];
+        Papa.parse(file, {
+            header: false,
+            preview: 2,
+            complete: function (result, file) {
+                var datasets = Datasets.find({}, { fields: { uri: 1} }).fetch();
+                var match = datasets.find(x => result.data[1].find(colVal => colVal.indexOf(x.uri) !== -1));
+                if (match) {
+                    resolve(match.uri);
+                }
+                resolve();
+            }
+        });
+    });
+}
