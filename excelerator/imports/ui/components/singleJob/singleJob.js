@@ -76,7 +76,18 @@ Template.singleJob.helpers({
             }).forEach(ls => {
                 datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
             })
-            return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } });
+            var datasets = Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } }).fetch();
+            if (datasets.length == 1 && this.params.outputUri != datasets[0].uri) {
+                //bit ugly to set this in here, but it'll do for now.
+                var build = Template.currentData();
+                App.JobBuilders.update(this._id, {
+                    $set: {
+                        "params.outputUri": datasets[0].uri,
+                        status: "ready"
+                    }
+                });
+            }
+            return datasets;
         }
     },
     building() {
