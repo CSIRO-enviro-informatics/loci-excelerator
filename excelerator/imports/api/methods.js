@@ -181,7 +181,7 @@ WHERE {
                     baseType: true
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
-                    title: "River Region Catchment",
+                    title: "River Region",
                     uri: "http://linked.data.gov.au/def/geofabric#RiverRegion",
                     withinTypes: [
                         "http://linked.data.gov.au/def/geofabric#DrainageDivision"
