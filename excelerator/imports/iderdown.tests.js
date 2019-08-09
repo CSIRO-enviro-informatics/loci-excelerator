@@ -237,19 +237,72 @@ if (Meteor.isServer) {
                     // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
                 })
 
-                // it('can extract approriate Address from locality', async function () {
-                //     var params = {
-                //         "outputUri": DATASETS.gnaf16,
-                //         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
-                //         "filterUri": DATASETS.gnaf16,
-                //         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
-                //         "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/ACT570"
-                //     };
-                //     var results = await testGetIds(params);
-                //     chai.assert.notEqual(results.data.length, 0, "Should have some results");
-                //     // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
-                // })
+                it('can extract approriate Address from StreetLocality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
+                        "filterUri": DATASETS.gnaf,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "idText": "http://linked.data.gov.au/dataset/gnaf/streetLocality/NSW2856338"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
 
+                it('can extract approriate StreetLocality from locality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "filterUri": DATASETS.gnaf,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                        "idText": "http://linked.data.gov.au/dataset/gnaf/locality/ACT328"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
+            })
+
+            describe('GNAF 1605', function () {
+                it('can extract approriate Address from locality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf16,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
+                        "filterUri": DATASETS.gnaf16,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                        "idText": ""
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
+
+                it('can extract approriate Address from StreetLocality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf16,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
+                        "filterUri": DATASETS.gnaf16,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "idText": ""
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
+
+                it('can extract approriate Address from locality', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf16,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "filterUri": DATASETS.gnaf16,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                        "idText": "http://linked.data.gov.au/dataset/gnaf/locality/ACT328"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.notEqual(results.data.length, 0, "Should have some results");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                })
             })
             
         })
