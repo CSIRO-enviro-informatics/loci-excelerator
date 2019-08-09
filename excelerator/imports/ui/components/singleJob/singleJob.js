@@ -3,7 +3,7 @@ import '../uploadForm/fileDetails';
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { App } from '../../../core.js'
+import { App, getCompatableDatasets } from '../../../core.js'
 
 import '../uploadForm/uploadForm'
 import Datasets from '../../../api/datasets/datasets';
@@ -13,7 +13,7 @@ import Jobs from '../../../api/jobs/jobs';
 
 Template.singleJob.onCreated(function () {
     var tpl = this;
-
+    
     tpl.currentUpload = new ReactiveVar(false);
     tpl.currentJobId = new ReactiveVar();
 });
@@ -65,29 +65,7 @@ Template.singleJob.helpers({
     availableOutputs() {
         var params = this.params;
         if (params && params.inputUri) {
-            var uri = params.inputUri;
-            var datasetsUris = new Set();
-            Linksets.find({
-                $or: [{
-                    subjectsTarget: uri
-                }, {
-                    objectsTarget: uri
-                }]
-            }).forEach(ls => {
-                datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
-            })
-            var datasets = Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } }).fetch();
-            if (datasets.length == 1 && this.params.outputUri != datasets[0].uri) {
-                //bit ugly to set this in here, but it'll do for now.
-                var build = Template.currentData();
-                App.JobBuilders.update(this._id, {
-                    $set: {
-                        "params.outputUri": datasets[0].uri,
-                        status: "ready"
-                    }
-                });
-            }
-            return datasets;
+            return getCompatableDatasets(params.inputUri);
         }
     },
     building() {
@@ -128,11 +106,17 @@ Template.singleJob.events({
         e.preventDefault();
         var build = Template.currentData();
         build.params.inputUri = this.uri;
-        delete build.params.outputUri;
+        var available = getCompatableDatasets(this.uri);
+        if(available.length == 1) {
+            build.params.outputUri = available[0].uri;
+        } else {
+            delete build.params.outputUri;
+        }
+
         App.JobBuilders.update(build._id, {
             $set: {
                 params: build.params,
-                status: "incomplete"
+                status: build.params.outputUri ? 'ready' : 'incomplete'
             }
         });
     },

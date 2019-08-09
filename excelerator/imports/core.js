@@ -5,6 +5,7 @@ import { Mongo } from 'meteor/mongo';
 import { Random } from 'meteor/random'
 import Helpers from './helpers'
 import Datasets from './api/datasets/datasets';
+import Linksets from './api/linksets/linksets';
 import Papa from 'papaparse';
 
 
@@ -49,6 +50,7 @@ export const App = {
         this.files[clientSideFileId] = file;
 
         function insertBuilder(inputUri) {
+            var datasets = getCompatableDatasets(inputUri);
             JobBuilders.insert({
                 created: new Date(),
                 fileId: clientSideFileId,
@@ -57,9 +59,10 @@ export const App = {
                 hasHeaders: true,
                 params: {
                     columnIndex: 0, //default for now
-                    inputUri
+                    inputUri,
+                    outputUri: datasets.length == 1 ? datasets[0].uri : null
                 },
-                status: 'incomplete'
+                status: datasets.length == 1 ? 'ready' : 'incomplete'
             })
         }
 
@@ -146,4 +149,18 @@ async function guessFileInputDataset(file) {
             }
         });
     });
+}
+
+export function getCompatableDatasets(uri) {
+    var datasetsUris = new Set();
+    Linksets.find({
+        $or: [{
+            subjectsTarget: uri
+        }, {
+            objectsTarget: uri
+        }]
+    }).forEach(ls => {
+        datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
+    })
+    return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } }).fetch();
 }
