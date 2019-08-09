@@ -58,21 +58,23 @@ WHERE {
 
                 })
 
+                Dataset.remove({});
                 datsetUris.forEach(uri => {
                     var title = uri.split('/').pop();
                     var exists = Dataset.findOne({ uri: uri });
-                    if (exists) {
-                        Dataset.update(exists.uri, {
-                            $set: {
-                                title
-                            }
-                        })
-                    } else {
+                    // if (exists) {
+                    //     Dataset.update(exists.uri, {
+                    //         $set: {
+                    //             title
+                    //         }
+                    //     })
+                    // } else {
+                    if(title == "asgs2016" || title == "geofabric")
                         Dataset.insert({
                             uri,
                             title
                         });
-                    }
+                    // }
                 })
 
                 return true;
