@@ -8,8 +8,15 @@
                         <div class="container">
                             <a class="navbar-brand" href="{{pathFor 'App.home'}}">
                                 <i class="fas fa-random text-primary fa-lg mr-2"></i>
-                                Excelerator
+                                Loc-I Tools
                             </a>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link {{isActiveRoute 'App.home'}}" href="{{pathFor 'App.home'}}">
+                                        <span class="ml-1">Excelerator</span>
+                                    </a>
+                                </li>
+                            </ul>
                             <ul class="navbar-nav">
                                 <li class="nav-item">
                                     <a class="nav-link {{isActiveRoute 'App.iderdown'}}" href="{{pathFor 'App.iderdown'}}">
