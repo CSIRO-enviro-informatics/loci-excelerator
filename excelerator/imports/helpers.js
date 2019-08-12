@@ -28,3 +28,11 @@ export default Helpers = {
         Meteor.isDevelopment && console.log(msg);
     } 
 }
+
+export const DATASETS = {
+    asgs2011: "http://linked.data.gov.au/dataset/asgs2011",
+    asgs2016: "http://linked.data.gov.au/dataset/asgs2016",
+    geofabric: "http://linked.data.gov.au/dataset/geofabric",
+    gnaf: "http://linked.data.gov.au/dataset/gnaf",
+    gnaf16: "http://linked.data.gov.au/dataset/gnaf-2016-05",
+}

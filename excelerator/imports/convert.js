@@ -211,7 +211,7 @@ export function processData(data, job, outputStream) {
         }
         return mem;
     }, new Array(data[0].length).fill(0));
-    Helpers.devlog(`Old Totals: ${JSON.stringify(originalTotals)}`);
+    // Helpers.devlog(`Old Totals: ${JSON.stringify(originalTotals)}`);
 
     var apportionedTotals = Object.values(dataCache).reduce((mem, rowData) => {
         rowData.forEach((tots, dataIndex) => {
@@ -220,7 +220,7 @@ export function processData(data, job, outputStream) {
         });
         return mem;
     }, new Array(data[0].length).fill(0));
-    Helpers.devlog(`New Totals: ${JSON.stringify(apportionedTotals)}`);
+    // Helpers.devlog(`New Totals: ${JSON.stringify(apportionedTotals)}`);
 
     var percDiffs = originalTotals.map((orgTotal, colIndex) => {
         var newTotal = apportionedTotals[colIndex];
@@ -233,7 +233,7 @@ export function processData(data, job, outputStream) {
         return Math.abs((orgTotal - newTotal) / orgTotal) * 100.0;
     })
 
-    Helpers.devlog(`Mass Balance Diffs: ${JSON.stringify(percDiffs)}`);
+    // Helpers.devlog(`Mass Balance Diffs: ${JSON.stringify(percDiffs)}`);
 
     var percDiff = percDiffs.find(diff => diff > MASS_BALANCE_TOLLERANCE_PERC);
     if (percDiff) {

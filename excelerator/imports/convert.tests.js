@@ -3,17 +3,10 @@ if (Meteor.isServer) {
     import { convert, processData } from './convert'
     import Papa from 'papaparse';
     import Helpers from './helpers'
+    import { DATASETS } from './helpers'
     import fs from 'fs';
     import './startup/server/register-api';
     const streams = require('memory-streams');
-
-    const DATASETS = {
-        asgs2011: "http://linked.data.gov.au/dataset/asgs2011",
-        asgs2016: "http://linked.data.gov.au/dataset/asgs2016",
-        geofabric: "http://linked.data.gov.au/dataset/geofabric",
-        gnaf: "http://linked.data.gov.au/dataset/gnaf",
-        gnaf16: "http://linked.data.gov.au/dataset/gnaf-2016-05",
-    }
 
     describe('Conversions', function () {
         this.timeout(30000);
@@ -21,23 +14,23 @@ if (Meteor.isServer) {
             Meteor.call('updateLinksets');
         });
 
-        describe('Full Cache', function() {
+        describe('Full Cache', function () {
             describe('Missing/Overlapping Apportionment', function () {
                 it('CC with missing MB should be warned about missing data', async function () {
                     var results = await testLinksetConversion('testData/CCsWithMissingMBs-TAS River.csv', DATASETS.geofabric, DATASETS.asgs2016);
                     chai.assert.include(results.data[0]['asgs2016'], "Warning", "Should be a warning");
                 })
-    
+
                 it('MB with badly aligned CCs should be warned about missing data', async function () {
                     var results = await testLinksetConversion('testData/MBBadOverlapWithCC-Base Straight.csv', DATASETS.asgs2016, DATASETS.geofabric);
                     chai.assert.include(results.data[0]['geofabric'], "Warning", "Should be a warning");
-                })            
-                
+                })
+
                 it('MB with badly aligned CCs but within tollerance should be ok', async function () {
                     var results = await testLinksetConversion('testData/MBBadOverlapWithCCButWithinThreshold-Base Straight.csv', DATASETS.asgs2016, DATASETS.geofabric);
                     chai.assert.notInclude(results.data[0]['geofabric'], "Warning", "Should NOT be a warning");
-                })                            
-            })    
+                })
+            })
         })
 
         describe('expected errors', function () {
@@ -51,7 +44,7 @@ if (Meteor.isServer) {
                 try {
                     await testLinksetConversion('testData/mini-gnaf-mb16-bad-number.csv', DATASETS.gnaf, DATASETS.asgs2016)
                     chai.assert.fail('Should have thrown exception');
-                } catch (e) {                    
+                } catch (e) {
                 }
             })
         })

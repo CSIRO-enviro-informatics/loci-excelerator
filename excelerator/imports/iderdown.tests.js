@@ -4,18 +4,11 @@ if (Meteor.isServer) {
     import { processIdJob, parseFilterIds } from './iderdown.js'
     import Papa from 'papaparse';
     import Helpers from './helpers'
+    import { DATASETS } from './helpers'
     import fs from 'fs';
     import './startup/server/register-api';
     const streams = require('memory-streams');
     import DatasetTypes from './api/datasetTypes/datasetTypes'
-
-    const DATASETS = {
-        asgs2011: "http://linked.data.gov.au/dataset/asgs2011",
-        asgs2016: "http://linked.data.gov.au/dataset/asgs2016",
-        geofabric: "http://linked.data.gov.au/dataset/geofabric",
-        gnaf: "http://linked.data.gov.au/dataset/gnaf",
-        gnaf16: "http://linked.data.gov.au/dataset/gnaf-2016-05",
-    }
 
     describe('IDerDown', function () {
         this.timeout(30000);
