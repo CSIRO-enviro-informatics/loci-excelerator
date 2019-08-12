@@ -27,7 +27,8 @@ export const PROPS = {
     "modified": "http://purl.org/dc/terms/modified",
     "subjectsTarget": "http://rdfs.org/ns/void#subjectsTarget",
     "linkPredicate": "http://rdfs.org/ns/void#linkPredicate",
-    "objectsTarget": "http://rdfs.org/ns/void#objectsTarget"
+    "objectsTarget": "http://rdfs.org/ns/void#objectsTarget",
+    "label": "http://www.w3.org/2000/01/rdf-schema#label"
 }
 
 export const KNOWN_PREDS = {

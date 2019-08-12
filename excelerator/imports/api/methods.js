@@ -22,12 +22,22 @@ WHERE {
     ?linkset ?pred ?obj
 }`;
 
+            var datasetQuery =
+                `PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX loci: <http://linked.data.gov.au/def/loci#>
+SELECT * 
+WHERE {
+    ?dataset a loci:Dataset .
+    ?dataset ?pred ?obj
+}`;
+
+
             try {
                 var result = getQueryResults(linksetQuery);
                 var json = JSON.parse(result.content);
                 var bindings = json.results.bindings;
                 var linksets = Helpers.groupBy(bindings, row => row['linkset'].value);
-                var datsetUris = new Set();
+                // var datsetUris = new Set();
 
                 linksets.forEach(lsprops => {
                     try {
@@ -42,8 +52,8 @@ WHERE {
                             linkPredicates: lsprops.filter(x => x.pred.value == PROPS.linkPredicate).map(x => x.obj.value)
                         }
 
-                        datsetUris.add(linksetObj.subjectsTarget);
-                        datsetUris.add(linksetObj.objectsTarget);
+                        // datsetUris.add(linksetObj.subjectsTarget);
+                        // datsetUris.add(linksetObj.objectsTarget);
 
                         var exists = Linkset.findOne({ uri: linksetObj.uri })
                         if (exists) {
@@ -57,29 +67,41 @@ WHERE {
                     }
 
                 })
+                
 
+                var result = getQueryResults(datasetQuery);
+                var json = JSON.parse(result.content);
+                var bindings = json.results.bindings;
+                var datasets = Helpers.groupBy(bindings, row => row['dataset'].value);
+                
                 Dataset.remove({});
-                datsetUris.forEach(uri => {
-                    var title = uri.split('/').pop();
-                    var exists = Dataset.findOne({ uri: uri });
-                    // if (exists) {
-                    //     Dataset.update(exists.uri, {
-                    //         $set: {
-                    //             title
-                    //         }
-                    //     })
-                    // } else {
-                    if(title == "asgs2016" || title == "geofabric")
-                        Dataset.insert({
-                            uri,
-                            title
-                        });
-                    // }
+                datasets.forEach(dsprops => {
+                    try {
+                        var datasetObj = {
+                            uri: dsprops[0].dataset.value,
+                            // title: dsprops.find(x => x.pred.value == PROPS.label).obj.value, //sometime more than one
+                        }
+
+                        if(!datasetObj.title) {
+                            datasetObj.title = datasetObj.uri.split('/').pop();
+                        }
+
+                        var exists = Dataset.findOne({ uri: datasetObj.uri })
+                        if (exists) {
+                            Dataset.update(exists._id, { $set: datasetObj })
+                        } else {
+                            Dataset.insert(datasetObj);
+                        }
+                    } catch (e) {
+                        console.log("Error reading the datasets from the DB. Probably missing data in DB");
+                        return false;
+                    }
                 })
 
                 return true;
             } catch (e) {
-                console.log("Error reading the linksets from the DB. Probably missing data in DB");
+                console.log("Error reading the linksets/datasets from the DB. Probably missing data in DB");
+                console.log(e);
                 return false;
             }
         }
