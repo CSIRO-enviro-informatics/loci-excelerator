@@ -199,9 +199,17 @@ WHERE {
                     title: "Address",
                     uri: "http://linked.data.gov.au/def/gnaf#Address",
                     withinTypes: [
+                        "http://linked.data.gov.au/def/gnaf#StreetLocality",
                         "http://linked.data.gov.au/def/gnaf#Locality"
                     ],
                     baseType: true,
+                }, {
+                    datasetUri: "http://linked.data.gov.au/dataset/gnaf",
+                    title: "Locality",
+                    uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                    withinTypes: [
+                        "http://linked.data.gov.au/def/gnaf#Locality"
+                    ],
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
                     title: "Locality",
