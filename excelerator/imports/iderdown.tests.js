@@ -141,7 +141,7 @@ if (Meteor.isServer) {
                         "outputTypeUri": "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
                         "filterUri": DATASETS.asgs2016,
                         "filterTypeUri": "http://linked.data.gov.au/def/asgs#StateOrTerritory",
-                        "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/ACT"
+                        "idText": "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/8"
                     };
                     var results = await testGetIds(params);
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
@@ -296,6 +296,22 @@ if (Meteor.isServer) {
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
                     // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
                 })
+
+            })
+
+            describe("no cross dataset queries", function() {
+                it('extraction are contrained to GNAF Current, when specifiying GNAF16', async function () {
+                    var params = {
+                        "outputUri": DATASETS.gnaf16,
+                        "outputTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "filterUri": DATASETS.gnaf16,
+                        "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
+                        "idText": "http://linked.data.gov.au/dataset/gnaf/locality/ACT328"
+                    };
+                    var results = await testGetIds(params);
+                    chai.assert.equal(results.data.length, 0, "No results should be returned");
+                    // chai.assert.lengthOf(results.data, 83, "Expected 83 RRs given DD");
+                }) 
             })
             
         })
