@@ -10,6 +10,7 @@ module.exports = {
   app: {
     name: 'Excelerator',
     path: '../excelerator/',
+    deployCheckWaitTime: 300,
 
     servers: {
       one: {},
@@ -32,15 +33,17 @@ module.exports = {
 
     docker: {
       image: 'abernix/meteord:node-8.4.0-base',
+      prepareBundle: true,
+      stopAppDuringPrepareBundle: true,
     },
 
     // Show progress bar while uploading bundle to server
     // You might need to disable it on CI servers
-    enableUploadProgressBar: true
+    enableUploadProgressBar: false
   },
 
   mongo: {
-    version: '3.4.1',
+    version: '4.0.2',
     servers: {
       one: {}
     }

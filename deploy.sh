@@ -13,4 +13,4 @@ npm install
 
 cd ../.deploy
 mup setup
-mup deploy
+mup deploy --verbose
