@@ -9,6 +9,7 @@ import Datasets from '../../../api/datasets/datasets';
 import Linksets from '../../../api/linksets/linksets';
 import DatasetTypes from '../../../api/datasetTypes/datasetTypes';
 import Jobs from '../../../api/jobs/jobs';
+import { DATASETS } from '../../../helpers'
 
 window.Datasets = Datasets;
 window.DatasetTypes = DatasetTypes;
@@ -59,7 +60,9 @@ Template.iderdownForm.helpers({
         return Template.instance().formState.get();
     },
     outputDatasets() {
-        return Datasets.find({}, { sort: { title: 1 } });
+        //hack to limit dataset
+        var allowed = [DATASETS.asgs2016, DATASETS.geofabric, DATASETS.gnaf]
+        return Datasets.find({ uri: { $in: allowed } }, { sort: { title: 1 } });
     },
     outputDataset() {
         var ds = Datasets.findOne({ uri: this.params.outputUri });
