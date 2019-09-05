@@ -7,7 +7,9 @@ import Helpers from './helpers'
 import Datasets from './api/datasets/datasets';
 import Linksets from './api/linksets/linksets';
 import Papa from 'papaparse';
+import { DATASETS } from './helpers'
 
+export const EXCEL_ALLOWED = [DATASETS.asgs2016, DATASETS.geofabric];
 
 const JobBuilders = new Mongo.Collection(null);
 window.JobBuilders = JobBuilders;
@@ -140,7 +142,7 @@ async function guessFileInputDataset(file) {
             header: false,
             preview: 2,
             complete: function (result, file) {
-                var datasets = Datasets.find({}, { fields: { uri: 1} }).fetch();
+                var datasets = Datasets.find({}, { fields: { uri: 1 } }).fetch();
                 var match = datasets.find(x => result.data[1].find(colVal => colVal.indexOf(x.uri) !== -1));
                 if (match) {
                     resolve(match.uri);
@@ -162,5 +164,6 @@ export function getCompatableDatasets(uri) {
     }).forEach(ls => {
         datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
     })
-    return Datasets.find({ uri: { $in: Array.from(datasetsUris) } }, { sort: { title: 1 } }).fetch();
+    var allowed = Array.from(datasetsUris).filter(x => EXCEL_ALLOWED.includes(x));
+    return Datasets.find({ uri: { $in: allowed } }, { sort: { title: 1 } }).fetch();
 }

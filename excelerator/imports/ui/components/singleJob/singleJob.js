@@ -3,13 +3,14 @@ import '../uploadForm/fileDetails';
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { App, getCompatableDatasets } from '../../../core.js'
+import { App, getCompatableDatasets, EXCEL_ALLOWED } from '../../../core.js'
 
 import '../uploadForm/uploadForm'
 import Datasets from '../../../api/datasets/datasets';
 import Linksets from '../../../api/linksets/linksets';
 import Uploads from '../../../api/uploads/uploads'
 import Jobs from '../../../api/jobs/jobs';
+
 
 Template.singleJob.onCreated(function () {
     var tpl = this;
@@ -23,7 +24,8 @@ Template.singleJob.helpers({
         return App.humanFileSize(this.fileSize);
     },
     datasets() {
-        return Datasets.find({}, { sort: { title: 1 } });
+        //hack to limit dataset
+        return Datasets.find({ uri: { $in: EXCEL_ALLOWED } }, { sort: { title: 1 } });
     },
     status() {
         var job = Jobs.findOne({ _id: this.jobId });
@@ -53,14 +55,14 @@ Template.singleJob.helpers({
     },
     inputLabel() {
         var input = Datasets.findOne({ uri: this.params.inputUri });
-        return input ? input.title : "Unknown";
+        return input && EXCEL_ALLOWED.includes(this.params.inputUri) ? input.title : "Unknown";
     },
     isActive(a, b) {
         return a == b ? "active" : "";
     },
     outputLabel() {
         var output = Datasets.findOne({ uri: this.params.outputUri });
-        return output ? output.title : "Unknown";
+        return output && EXCEL_ALLOWED.includes(this.params.inputUri) != -1 ? output.title : "Unknown";
     },
     availableOutputs() {
         var params = this.params;
