@@ -10,7 +10,10 @@ import Jobs from '../../../api/jobs/jobs';
 
 Template.iderdownJob.helpers({
     jobText() {
-        return "ASGS - Meshblocks"
+        var outputType = DatasetTypes.findOne({ uri: this.data.params.outputTypeUri });
+        var filterType = DatasetTypes.findOne({ uri: this.data.params.filterTypeUri });
+
+        return `${outputType.title} by ${filterType.title}`;
     },
     humanFileSize() {
         return App.humanFileSize(this.fileSize);
