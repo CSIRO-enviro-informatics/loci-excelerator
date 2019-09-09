@@ -1,9 +1,15 @@
 <template name="helpModal">
-    <div class="modal fade" id="helpModal">
+    <div class="modal fade" id="{{#if id}}{{id}}{{else}}helpModal{{/if}}">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Assistance</h4>
+                    <h4 class="modal-title">
+                        {{#if title}}
+                            {{title}}
+                        {{else}}
+                            Assistance
+                        {{/if}}
+                    </h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 

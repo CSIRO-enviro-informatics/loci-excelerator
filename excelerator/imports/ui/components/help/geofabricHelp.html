@@ -1,0 +1,23 @@
+
+<template name="geofabricHelp">
+    <p>
+        In the geofabric data there is a specific mapping of river regions to contracted catchments. This mapping represents the 
+        hydrological contributions of a catchment to its parent river region outflow, a grouping of sorts. However, due to the geophysical properties of some
+        catchments (those internally draining), not all catchments contribute to the outflow of any river region. Because we assumed (incorrectly)
+        the mapping table was a purely spatial representation, it has lead to areas of a river region that are not spatially covered by contracted catchments. (See the image below)
+    </p>
+    <figure>
+        <img src=img/rr_holes.png alt="Geofabric Holes" style="height: 300px; width: 100%; object-fit: cover;">
+        <figcaption>(The yellow polygons are contracted catchments, the green polygons are contracted catchments that belong to the same parent river region.)</figcaption>
+    </figure>
+    <p>
+        <strong>We are currently in the process of defining a purely spatial based mapping of contracted catchments to river regions.</strong>
+    </p>
+    <h5>Effect on outputs</h5>
+    <p>
+        <strong>IderDown</strong> has incomplete data when asking for contracted catchment ids filtered by river region or drainage division, you will have missing contracted catchments ids due to missing sfWithin statements.
+    </p>
+    <p>
+        <strong>Excelerator</strong> has no side effects yet as the tool doesn't allow the use of river regions.  
+    </p>
+</template>

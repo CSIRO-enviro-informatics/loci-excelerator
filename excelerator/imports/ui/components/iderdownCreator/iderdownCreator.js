@@ -1,5 +1,8 @@
 import './iderdownCreator.html';
 import './iderdownJob';
+import '../help/help';
+import '../help/geofabricHelp';
+
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { App } from '../../../core.js'
@@ -121,6 +124,9 @@ Template.iderdownForm.helpers({
             this.params.idText;
         return ready ? {} : { disabled: "" };
     },
+    showWarning() {
+        return this.params.outputUri == DATASETS.geofabric;
+    }
 })
 
 Template.iderdownForm.events({

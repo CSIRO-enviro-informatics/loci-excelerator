@@ -122,10 +122,18 @@
                         placeholder="e.g http://linked.data.gov.au/dataset/asgs2016/meshblock/50055290000">{{params.idText}}</textarea>
                 </div>
             </div>
+            {{#if showWarning}}
+            <p class="text-right">
+                <button id='showGeofabHelp' type="button" class="btn btn-link text-danger" data-toggle="modal" data-target="#geofabricModal">
+                    there are potential issues with geofabric data *
+                </button>
+            </p>
+            {{/if}}
             <button id="submitIdJob" type="button" class="btn btn-primary ml-auto d-block" {{isDisabled}}>
                 <span class="mx-4">Submit</span>
                 <!-- <i class="fas fa-desktop fa-lg ml-auto mr-4" style="position: relative;top: 2px;"></i> -->
             </button>
         </form>
     {{/with}}
+    {{> helpModal helpBody='geofabricHelp' id='geofabricModal' title="Geofabric Warning"}}
 </template>
