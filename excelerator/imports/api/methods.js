@@ -227,7 +227,7 @@ WHERE {
                     baseType: true,
                 }, {
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
-                    title: "Locality",
+                    title: "Street Locality",
                     uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
                     withinTypes: [
                         "http://linked.data.gov.au/def/gnaf#Locality"
