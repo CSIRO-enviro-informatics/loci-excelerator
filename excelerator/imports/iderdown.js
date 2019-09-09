@@ -40,6 +40,7 @@ export function getIds(job, cb) {
 
         var filename = `${outputType.title} by ${filterType.title} (${job._doc._id}).csv`;
         console.log(filename);
+        console.log(JSON.stringify(jobData.params, null, 4));
         var outputFile = `${Meteor.settings.public.uploads.path}/${filename}`;
         const outputStream = fs.createWriteStream(outputFile);
 
@@ -117,8 +118,17 @@ export function processIdJob(job, outputStream) {
     }
 
     var filterUris = parseFilterIds(params.filterUri, params.idText);
+    //Check all Ids are part of the specified Filter Dataset
+    filterUris.forEach(uri => {
+        if(!hasType(uri, params.filterTypeUri)) {
+            throw new Meteor.Error(`The filter uri <${uri}> is not an instance of filter type <${params.filterTypeUri}>`)
+        }
+        // if(!partOfDataset(uri, params.filterUri)) {
+        //     throw new Meteor.Error(`The filter uri <${uri}> is not part of the filter dataset <${params.filterUri}>`)
+        // }
+    })
 
-    if (params.outputUri == params.filterUri) {
+    if (params.outputUri == params.filterUri) { //DatasetTypes
         var startTime = new Date(); //not actually the start, but close enough for the timeout purposes
 
         var inHierarchy = outputType.withinTypes.indexOf(params.filterTypeUri) !== -1;
@@ -198,6 +208,43 @@ export function processIdJob(job, outputStream) {
 
     outputStream.end();
 }
+
+function hasType(objectUri, type) {
+    var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+SELECT *
+where {
+    <${objectUri}> a ?type .            
+}`; //get more than 1 in case there are many, which woudl be odd
+
+    try {
+        var result = getQueryResults(query);
+        var json = JSON.parse(result.content);
+        var bindings = json.results.bindings;
+        var types = bindings.map(b => b.type.value);
+        return types.includes(type);
+    } catch (e) {
+        throw e;
+    }
+}
+
+// function partOfDataset(objectUri, datasetUri) {
+//     var query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+// SELECT *
+// where {
+//     <${objectUri}> a ?type .  
+//     //need a way to secify if something is within a dataset.          
+// }`; //get more than 1 in case there are many, which woudl be odd
+
+//     try {
+//         var result = getQueryResults(query);
+//         var json = JSON.parse(result.content);
+//         var bindings = json.results.bindings;
+//         var types = bindings.map(b => b.type.value);
+//         return types.includes(type);
+//     } catch (e) {
+//         throw e;
+//     }
+// }
 
 function getObjectsWithin(containerUri, outputType) {
     var page = 0;
