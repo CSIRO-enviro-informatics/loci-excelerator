@@ -62,7 +62,7 @@ Template.singleJob.helpers({
     },
     outputLabel() {
         var output = Datasets.findOne({ uri: this.params.outputUri });
-        return output && EXCEL_ALLOWED.includes(this.params.inputUri) != -1 ? output.title : "Unknown";
+        return output && EXCEL_ALLOWED.includes(this.params.inputUri) ? output.title : "Unknown";
     },
     availableOutputs() {
         var params = this.params;
