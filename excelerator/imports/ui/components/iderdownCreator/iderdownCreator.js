@@ -125,7 +125,7 @@ Template.iderdownForm.helpers({
         return ready ? {} : { disabled: "" };
     },
     showWarning() {
-        return this.params.outputUri == DATASETS.geofabric;
+        return false;// this.params.outputUri == DATASETS.geofabric;
     }
 })
 
