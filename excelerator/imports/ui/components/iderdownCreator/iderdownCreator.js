@@ -64,7 +64,7 @@ Template.iderdownForm.helpers({
     },
     outputDatasets() {
         //hack to limit dataset
-        var allowed = [DATASETS.asgs2016, DATASETS.geofabric, DATASETS.gnaf]
+        var allowed = [DATASETS.asgs2016, DATASETS.geofabric, DATASETS.gnaf16]
         return Datasets.find({ uri: { $in: allowed } }, { sort: { title: 1 } });
     },
     outputDataset() {
