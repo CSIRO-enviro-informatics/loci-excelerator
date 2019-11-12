@@ -63,9 +63,8 @@ WHERE {
                         }
                     } catch (e) {
                         console.log("Error reading the linksets from the DB. Probably missing data in DB");
-                        return false;
+                        console.log(lsprops[0].linkset.value);
                     }
-
                 })
                 
 
@@ -94,15 +93,12 @@ WHERE {
                         }
                     } catch (e) {
                         console.log("Error reading the datasets from the DB. Probably missing data in DB");
-                        return false;
+                        console.log(dsprops[0].dataset.value);
                     }
                 })
-
-                return true;
             } catch (e) {
                 console.log("Error reading the linksets/datasets from the DB. Probably missing data in DB");
                 console.log(e);
-                return false;
             }
         }
     },
