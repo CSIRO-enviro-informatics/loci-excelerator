@@ -11,7 +11,6 @@ Meteor.methods({
     updateLinksets() {
         if (!this.isSimulation) {
             this.unblock();
-            // DatasetTypes.remove({});
 
             var linksetQuery =
                 `PREFIX void: <http://rdfs.org/ns/void#>
@@ -39,6 +38,7 @@ WHERE {
                 var linksets = Helpers.groupBy(bindings, row => row['linkset'].value);
                 // var datsetUris = new Set();
 
+                Linkset.remove({});
                 linksets.forEach(lsprops => {
                     try {
                         var linksetObj = {
@@ -100,7 +100,7 @@ WHERE {
                 console.log("Error reading the linksets/datasets from the DB. Probably missing data in DB");
                 console.log(e);
             }
-        }
+        } 
     },
     updateDatasetTypes() {
         if (!this.isSimulation) {
