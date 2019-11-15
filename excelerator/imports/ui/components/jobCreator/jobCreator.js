@@ -11,6 +11,7 @@ import Linksets from '../../../api/linksets/linksets';
 import Uploads from '../../../api/uploads/uploads'
 import Jobs from '../../../api/jobs/jobs';
 
+window.Linksets = Linksets;
 window.Datasets = Datasets;
 window.Uploads = Uploads;
 window.Jobs = Jobs;

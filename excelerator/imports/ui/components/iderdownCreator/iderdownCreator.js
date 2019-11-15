@@ -14,6 +14,7 @@ import DatasetTypes from '../../../api/datasetTypes/datasetTypes';
 import Jobs from '../../../api/jobs/jobs';
 import { DATASETS } from '../../../helpers'
 
+window.Linksets = Linksets;
 window.Datasets = Datasets;
 window.DatasetTypes = DatasetTypes;
 window.Jobs = Jobs;
