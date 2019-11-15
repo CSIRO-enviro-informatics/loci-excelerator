@@ -151,8 +151,13 @@ export function processData(data, job, outputStream) {
             // Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
+            
+            // The next "if" is totally a hack, URI should not be dependant on their parent URI
+            // Ideally check if the statement belongs to the dataset using the graph relationships. It means another query
+            // which may or may not be worth it?
             if (fromUri.indexOf(jobData.from.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
+
             var toObjects = getStatements(fromUri, isReverse, linkset.uri);
             // Helpers.devlog(`within or equals, #${toObjects.length}`);
             //contains many 
