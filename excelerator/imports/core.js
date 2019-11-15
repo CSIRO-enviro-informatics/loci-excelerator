@@ -9,7 +9,7 @@ import Linksets from './api/linksets/linksets';
 import Papa from 'papaparse';
 import { DATASETS } from './helpers'
 
-export const EXCEL_ALLOWED = [DATASETS.asgs2016, DATASETS.geofabric];
+export const EXCEL_ALLOWED = [DATASETS.asgs2016, DATASETS.geofabric, DATASETS.gnaf16];
 
 const JobBuilders = new Mongo.Collection(null);
 window.JobBuilders = JobBuilders;
