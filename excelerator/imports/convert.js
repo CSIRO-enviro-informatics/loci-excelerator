@@ -164,11 +164,13 @@ export function processData(data, job, outputStream) {
             // console.log(toObjects[0])
             if (toObjects.length != 0) {
                 predicateSuccess = true;
-                var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
+                var hasToAreas = toObjects.every(toObj => !!toObj.area);
+                var hasFromAreas = toObjects.every(toObj => !!toObj.fromArea);
+
                 toObjects.forEach(toObj => {
-                    prepareCache(dataCache, toObj.uri, row, jobData);
-                    if (hasAreas) {
-                        var proportionToGive = toObj.area / toObj.fromArea;
+                    prepareCache(dataCache, toObj.uri, row, jobData);                
+                    if (hasToAreas) {
+                        var proportionToGive = hasFromAreas ? toObj.area / toObj.fromArea : 1;
                         //Never distribute more than the amount that the from object has to give
                         //The area of the two objects is only ever greater in the circumstance of a within, so really
                         //this test is for the presence of a within statement, in which case we want to fully allocate the
