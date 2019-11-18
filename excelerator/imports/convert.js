@@ -219,10 +219,12 @@ export function processData(data, job, outputStream) {
     // Helpers.devlog(`Old Totals: ${JSON.stringify(originalTotals)}`);
 
     var apportionedTotals = Object.values(dataCache).reduce((mem, rowData) => {
-        rowData.forEach((tots, dataIndex) => {
-            if (dataIndex != jobData.from.columnIndex) 
-                mem[dataIndex] += tots.total;
-        });
+        if(!rowData.unapportioned) {
+            rowData.forEach((tots, dataIndex) => {
+                if (dataIndex != jobData.from.columnIndex) 
+                    mem[dataIndex] += tots.total;
+            });
+        }
         return mem;
     }, new Array(data[0].length).fill(0));
     // Helpers.devlog(`New Totals: ${JSON.stringify(apportionedTotals)}`);
@@ -237,13 +239,19 @@ export function processData(data, job, outputStream) {
         }
         return Math.abs((orgTotal - newTotal) / orgTotal) * 100.0;
     })
-
     // Helpers.devlog(`Mass Balance Diffs: ${JSON.stringify(percDiffs)}`);
 
     var percDiff = percDiffs.find(diff => diff > MASS_BALANCE_TOLLERANCE_PERC);
     if (percDiff) {
         var row = new Array(data[0].length).fill("");
         row[0] = `Warning: The input source values were not completely apportioned to outputs. This happens when the output dataset does not completely cover the input dataset spatially. ${percDiff.toFixed(3)}% of the data was left unassigned.`;
+        var rowText = Papa.unparse([row], { header: false, newline: '\n' });
+        outputStream.write(rowText + "\n");
+    }
+
+    if(hasUnknowns) {
+        var row = new Array(data[0].length).fill("");
+        row[0] = `Warning: Some (or all) of the data was unable to be apportioned. These fields are marked with a question mark and the original value.`;
         var rowText = Papa.unparse([row], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     }
@@ -324,6 +332,7 @@ function getStatements(fromUri, isReverse, linksetUri) {
     var objectText = isReverse ? wrappedUri : toVar;
     //I feel this query it prone to breaking the second the datasource introduces unexpected relationships
     //Like unexpected inferred relationships, for example transitiveOvelaps will break it and have to be explicitely removed
+    //Also, this doesn't address equal, which would be present with asgs11->asgs16
     var query = `PREFIX void: <http://rdfs.org/ns/void#>
 PREFIX loci: <http://linked.data.gov.au/def/loci#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -360,7 +369,7 @@ WHERE {
 `;
 
     try {
-        // console.log(query)
+        console.log(query);
         var result = getQueryResults(query);
         var json = JSON.parse(result.content);
         var bindings = json.results.bindings;
