@@ -334,7 +334,8 @@ function getStatements(fromUri, outputType) {
                 // contains: false,
                 // within: false,
                 crosswalk: true,
-                output_type: outputType,
+                output_type: outputType.uri,
+                output_dataset: outputType.datasetUri,
                 // count: 1000,
                 // offset: 0
             }
