@@ -17,17 +17,27 @@ Meteor.methods({
                     <${objectUri}> a ?t .
                 }`;
 
+            console.log(linksetQuery)
             var result = getQueryResults(linksetQuery);
             var json = JSON.parse(result.content);
+            console.log(json)
             var bindings = json.results.bindings;
 
+            var t = null;
+            //find a type we know about ie not Feature or Class etc
             bindings.forEach(b => {
-                result = DatasetTypes.findOne({uri: b.t.value});
-                if(result)
-                    return result;
+                if(!t)
+                    t = DatasetTypes.findOne({uri: b.t.value});
             })
 
-            return null;
+            //
+            //Need somethign better that string lookup. This is a hack.
+            var dataset = DatasetTypes.find({uri: t.uri}).fetch().find(type => {
+                var datasetPrefix = type.datasetUri + "/"; //adding slash because of gnaf
+                return objectUri.startsWith(datasetPrefix);
+            })
+
+            return t;
         } 
     }
 });

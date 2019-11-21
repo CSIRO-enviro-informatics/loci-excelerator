@@ -137,25 +137,20 @@ $single-spacer: 2.0rem;
         padding-right: $single-spacer;
     }
 
-    .from-section {
-        padding-right: $single-spacer;
-
-        .dropdown button {
-            width: 150px;
+    .controls {
+        .label {
+            margin-left: $single-spacer/2;
+            margin-right: $single-spacer/2;
         }
-    }
-
-    .to-section {
-        padding-right: $single-spacer;
-
         .dropdown button {
-            width: 150px;
+            width: 180px;
         }
     }
 
     .status-section {
         width: 100px;
-        padding-right: $single-spacer;
+        margin-left: $single-spacer/2;
+        margin-right: $single-spacer/2;
     }
 
     .download-section {

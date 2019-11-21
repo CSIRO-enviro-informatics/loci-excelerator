@@ -105,24 +105,24 @@ export function convert(job, cb) {
 
 export function processData(data, job, outputStream) {
     var jobData = job.data;
-    var linkset = Linksets.findOne({ subjectsTarget: jobData.from.datasetUri, objectsTarget: jobData.to.datasetUri });
+
+    var outputType = DatasetTypes.findOne({uri: jobData.to.classTypeUri, datasetUri: jobData.to.datasetUri});
+    if(!outputType)
+        throw new Meteor.Error(`There is no classtype defined by ${jobData.to.classTypeUri}`);
+
+    var inputType = DatasetTypes.findOne({uri: jobData.from.classTypeUri, datasetUri: jobData.from.datasetUri});
+    if(!inputType)
+        throw new Meteor.Error(`There is no classtype defined by ${jobData.from.classTypeUri}`);
+    
+    var linkset = Linksets.findOne({ subjectsTarget: inputType.datasetUri, objectsTarget: outputType.datasetUri });
     var isReverse = false; //is the dataset going from subject to object
     if (!linkset) {
         isReverse = true;
-        linkset = Linksets.findOne({ subjectsTarget: jobData.to.datasetUri, objectsTarget: jobData.from.datasetUri });
+        linkset = Linksets.findOne({ subjectsTarget: outputType.datasetUri, objectsTarget: inputType.datasetUri });
     }
 
     if (!linkset) {
-        throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
-    }
-
-    var fromDataset = Datasets.findOne({ uri: jobData.from.datasetUri });
-    if (!fromDataset) {
-        throw new Meteor.Error(`The from dataset cannot be found ${jobData.from.datasetUri}`);
-    }
-    var toDataset = Datasets.findOne({ uri: jobData.to.datasetUri });
-    if (!toDataset) {
-        throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
+        throw new Meteor.Error(`No linkset exists to map these datasets ${inputType.datasetUri} --> ${outputType.datasetUri}`);
     }
 
     //Need to put MB areas in the graph
@@ -154,14 +154,9 @@ export function processData(data, job, outputStream) {
             // The next "if" is totally a hack, URI should not be dependant on their parent URI
             // Ideally check if the statement belongs to the dataset using the graph relationships. It means another query
             // which may or may not be worth it?
-            if (fromUri.indexOf(jobData.from.datasetUri) == -1)
-                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
+            if (fromUri.indexOf(inputType.datasetUri) == -1)
+                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${inputType.datasetUri}`);
 
-            var baseType = DatasetTypes.findOne({datasetUri: toDataset.uri, baseType: true});
-            if(!baseType)
-                throw new Meteor.Error(`There is no base classtype defined for the dataset ${toDataset.uri}`);
-
-            var outputType = baseType.uri;
             var toObjects = getStatements(fromUri, outputType);
 
             if (toObjects.length != 0) {
@@ -199,7 +194,7 @@ export function processData(data, job, outputStream) {
     //write the headers
     if (jobData.hasHeaders) {
         var headerRow = data[0];
-        headerRow[jobData.from.columnIndex] = toDataset.title;
+        headerRow[jobData.from.columnIndex] = outputType.title;
         if (hasUnknowns) {
             headerRow.push("Originating URI");
         }
@@ -335,7 +330,7 @@ function getStatements(fromUri, outputType) {
             params: {
                 uri: fromUri,
                 areas: true,
-                proportion: false,
+                proportion: true,
                 // contains: false,
                 // within: false,
                 crosswalk: true,
@@ -345,13 +340,13 @@ function getStatements(fromUri, outputType) {
             }
         });
         var json = JSON.parse(result.content);
-        var objectArea = json.meta.featureArea;
+        var objectArea = +json.meta.featureArea;
         var outputObjects = json.overlaps;
 
         var matches = outputObjects.map(outObj => ({
             uri: outObj.uri,
-            fromArea: objectArea,
-            area: outObj.intersectionArea != null ? outObj.intersectionArea : outObj.featureArea,
+            fromArea: +objectArea,
+            area: outObj.intersectionArea != null ? +outObj.intersectionArea : +outObj.featureArea,
         }))
         return matches;
     } catch (e) {
