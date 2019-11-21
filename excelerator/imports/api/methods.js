@@ -17,10 +17,8 @@ Meteor.methods({
                     <${objectUri}> a ?t .
                 }`;
 
-            console.log(linksetQuery)
             var result = getQueryResults(linksetQuery);
             var json = JSON.parse(result.content);
-            console.log(json)
             var bindings = json.results.bindings;
 
             var t = null;
@@ -32,12 +30,12 @@ Meteor.methods({
 
             //
             //Need somethign better that string lookup. This is a hack.
-            var dataset = DatasetTypes.find({uri: t.uri}).fetch().find(type => {
+            var objectType = DatasetTypes.find({uri: t.uri}).fetch().find(type => {
                 var datasetPrefix = type.datasetUri + "/"; //adding slash because of gnaf
                 return objectUri.startsWith(datasetPrefix);
             })
 
-            return t;
+            return objectType;
         } 
     }
 });
