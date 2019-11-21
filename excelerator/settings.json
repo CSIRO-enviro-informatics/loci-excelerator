@@ -12,5 +12,8 @@
         "sparqlEndpoint": "http://db.loci.cat/repositories/loci-cache",
         "user": "ro",
         "password": "locireadonly"
-    }
+    },
+    "integrationApi": {
+        "endpoint": "http://loci-1.it.csiro.au:32771/api/v1"
+    }    
 }
