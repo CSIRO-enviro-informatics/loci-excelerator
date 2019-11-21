@@ -17,20 +17,16 @@ Meteor.methods({
                     <${objectUri}> a ?t .
                 }`;
 
-            try {
-                var result = getQueryResults(linksetQuery);
-                var json = JSON.parse(result.content);
-                var bindings = json.results.bindings;
+            var result = getQueryResults(linksetQuery);
+            var json = JSON.parse(result.content);
+            var bindings = json.results.bindings;
 
-                bindings.forEach(b => {
-                    result = DatasetTypes.findOne({uri: b.t.value});
-                    if(result)
-                        return result;
-                })
-            } catch (e) {
-                console.log("Error assessing object type");
-                console.log(e);
-            }
+            bindings.forEach(b => {
+                result = DatasetTypes.findOne({uri: b.t.value});
+                if(result)
+                    return result;
+            })
+
             return null;
         } 
     }

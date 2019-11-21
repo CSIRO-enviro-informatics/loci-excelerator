@@ -68,8 +68,8 @@ export const App = {
             })
         }
 
-        guessFileInputDataset(file).then(inputUri => {
-            insertBuilder(inputUri);
+        guessFileInputDataset(file).then(inputClassUri => {
+            insertBuilder(inputClassUri);
         }).catch(err => {
             insertBuilder();
         });
@@ -142,12 +142,16 @@ async function guessFileInputDataset(file) {
             header: false,
             preview: 2,
             complete: function (result, file) {
-                var datasets = Datasets.find({}, { fields: { uri: 1 } }).fetch();
-                var match = datasets.find(x => result.data[1].find(colVal => colVal.indexOf(x.uri) !== -1));
-                if (match) {
-                    resolve(match.uri);
-                }
-                resolve();
+                //assuming first column
+                var sampleUri = result.data[1][0];
+                Meteor.call("getObjectDatasetType", sampleUri, (error, result) => {
+                    if(error) {
+                        reject();
+                    }       
+                    if(result)             
+                        resolve(result.uri);
+                    resolve();
+                })
             }
         });
     });
