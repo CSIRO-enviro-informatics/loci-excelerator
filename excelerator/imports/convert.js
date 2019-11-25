@@ -157,7 +157,7 @@ export function processData(data, job, outputStream) {
             if (fromUri.indexOf(inputType.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${inputType.datasetUri}`);
 
-            var toObjects = getStatements(fromUri, outputType);
+            var toObjects = getProportionStatements(fromUri, outputType);
 
             if (toObjects.length != 0) {
                 predicateSuccess = true;
@@ -324,7 +324,7 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     });
 }
 
-function getStatements(fromUri, outputType) {
+export function getProportionStatements(fromUri, outputType) {
     try {
         var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/location/overlaps", {
             params: {
