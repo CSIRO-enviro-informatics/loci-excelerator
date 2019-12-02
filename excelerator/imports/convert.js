@@ -324,22 +324,23 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     });
 }
 
-export function getProportionStatements(fromUri, outputType) {
+export function getProportionStatements(fromUri, outputType, isCrosswalk = true, isContains = false, isWithin = false) {
     try {
         var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/location/overlaps", {
             params: {
                 uri: fromUri,
                 areas: true,
                 proportion: true,
-                // contains: false,
-                // within: false,
-                crosswalk: true,
+                contains: isContains,
+                within: isWithin,
+                crosswalk: isCrosswalk,
                 output_type: outputType.uri,
                 output_dataset: outputType.datasetUri,
                 // count: 1000,
                 // offset: 0
             }
         });
+        console.log(result);
         var json = JSON.parse(result.content);
         var objectArea = +json.meta.featureArea;
         var outputObjects = json.overlaps;

@@ -131,9 +131,11 @@ export function processIdJob(job, outputStream) {
 
     var startTime = new Date(); //not actually the start, but close enough for the timeout purposes
 
+
+    //Commenting this block out to enable corsswalks
     var inHierarchy = outputType.withinTypes.indexOf(params.filterTypeUri) !== -1;
-    if (!inHierarchy)
-        throw new Meteor.Error(`<${params.outputTypeUri}> are never within objects of <${params.filterTypeUri}>, so we don't filter it.`)
+    //if (!inHierarchy)
+    //    throw new Meteor.Error(`<${params.outputTypeUri}> are never within objects of <${params.filterTypeUri}>, so we don't filter it.`)
 
     //write headers
     var headers = [params.outputTypeUri, params.filterTypeUri].map(typeUri => DatasetTypes.findOne({ uri: typeUri }).title);
@@ -154,7 +156,14 @@ export function processIdJob(job, outputStream) {
             }
         }
 
-        var proportions = getProportionStatements(fUri, outputType);
+        var isCrosswalk = true;
+        if (inHierarchy) {
+           isCrosswalk = false;
+        }
+
+        var isContains = true;
+        
+        var proportions = getProportionStatements(fUri, outputType, isCrosswalk, isContains);
 
         var rows = proportions.map(p => {
             if(!p.fromArea && p.area) {
