@@ -1,6 +1,7 @@
 // Register your apis here
 
 import '../../api/methods'; //General Methods
+import '../../api/methods-init';
 
 import '../../api/uploads/methods';
 import '../../api/uploads/server/publications.js';

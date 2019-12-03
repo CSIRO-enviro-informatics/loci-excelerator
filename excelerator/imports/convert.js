@@ -7,6 +7,7 @@ import Datasets from './api/datasets/datasets';
 import { getQueryResults, KNOWN_PREDS } from './linksetApi';
 import Helpers from './helpers';
 import { isNumber } from 'util';
+import DatasetTypes from './api/datasetTypes/datasetTypes';
 
 const MASS_BALANCE_TOLLERANCE_PERC = 0.5;
 
@@ -104,27 +105,25 @@ export function convert(job, cb) {
 
 export function processData(data, job, outputStream) {
     var jobData = job.data;
-    var linkset = Linksets.findOne({ subjectsTarget: jobData.from.datasetUri, objectsTarget: jobData.to.datasetUri });
+
+    var outputType = DatasetTypes.findOne({uri: jobData.to.classTypeUri, datasetUri: jobData.to.datasetUri});
+    if(!outputType)
+        throw new Meteor.Error(`There is no classtype defined by ${jobData.to.classTypeUri}`);
+
+    var inputType = DatasetTypes.findOne({uri: jobData.from.classTypeUri, datasetUri: jobData.from.datasetUri});
+    if(!inputType)
+        throw new Meteor.Error(`There is no classtype defined by ${jobData.from.classTypeUri}`);
+    
+    var linkset = Linksets.findOne({ subjectsTarget: inputType.datasetUri, objectsTarget: outputType.datasetUri });
     var isReverse = false; //is the dataset going from subject to object
     if (!linkset) {
         isReverse = true;
-        linkset = Linksets.findOne({ subjectsTarget: jobData.to.datasetUri, objectsTarget: jobData.from.datasetUri });
+        linkset = Linksets.findOne({ subjectsTarget: outputType.datasetUri, objectsTarget: inputType.datasetUri });
     }
 
     if (!linkset) {
-        throw new Meteor.Error(`No linkset exists to map these datasets ${jobData.from.datasetUri} --> ${jobData.to.datasetUri}`);
+        throw new Meteor.Error(`No linkset exists to map these datasets ${inputType.datasetUri} --> ${outputType.datasetUri}`);
     }
-
-    var fromDataset = Datasets.findOne({ uri: jobData.from.datasetUri });
-    if (!fromDataset) {
-        throw new Meteor.Error(`The from dataset cannot be found ${jobData.from.datasetUri}`);
-    }
-    var toDataset = Datasets.findOne({ uri: jobData.to.datasetUri });
-    if (!toDataset) {
-        throw new Meteor.Error(`The to dataset cannot be found ${jobData.to.datasetUri}`);
-    }
-
-    var predicates = linkset.linkPredicates;
 
     //Need to put MB areas in the graph
     var dataCache = {};
@@ -151,19 +150,24 @@ export function processData(data, job, outputStream) {
             // Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
-            if (fromUri.indexOf(jobData.from.datasetUri) == -1)
-                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${jobData.from.datasetUri}`);
-            var toObjects = getStatements(fromUri, isReverse, linkset.uri);
-            // Helpers.devlog(`within or equals, #${toObjects.length}`);
-            //contains many 
-            // console.log(toObjects[0])
+
+            // The next "if" is totally a hack, URI should not be dependant on their parent URI
+            // Ideally check if the statement belongs to the dataset using the graph relationships. It means another query
+            // which may or may not be worth it?
+            if (fromUri.indexOf(inputType.datasetUri) == -1)
+                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${inputType.datasetUri}`);
+
+            var toObjects = getProportionStatements(fromUri, outputType);
+
             if (toObjects.length != 0) {
                 predicateSuccess = true;
-                var hasAreas = toObjects.every(toObj => !!toObj.area && toObj.fromArea);
+                var hasToAreas = toObjects.every(toObj => !!toObj.area);
+                var hasFromAreas = toObjects.every(toObj => !!toObj.fromArea);
+
                 toObjects.forEach(toObj => {
                     prepareCache(dataCache, toObj.uri, row, jobData);
-                    if (hasAreas) {
-                        var proportionToGive = toObj.area / toObj.fromArea;
+                    if (hasToAreas) {
+                        var proportionToGive = hasFromAreas ? toObj.area / toObj.fromArea : 1;
                         //Never distribute more than the amount that the from object has to give
                         //The area of the two objects is only ever greater in the circumstance of a within, so really
                         //this test is for the presence of a within statement, in which case we want to fully allocate the
@@ -190,7 +194,7 @@ export function processData(data, job, outputStream) {
     //write the headers
     if (jobData.hasHeaders) {
         var headerRow = data[0];
-        headerRow[jobData.from.columnIndex] = toDataset.title;
+        headerRow[jobData.from.columnIndex] = outputType.title;
         if (hasUnknowns) {
             headerRow.push("Originating URI");
         }
@@ -214,31 +218,39 @@ export function processData(data, job, outputStream) {
     // Helpers.devlog(`Old Totals: ${JSON.stringify(originalTotals)}`);
 
     var apportionedTotals = Object.values(dataCache).reduce((mem, rowData) => {
-        rowData.forEach((tots, dataIndex) => {
-            if (dataIndex != jobData.from.columnIndex) 
-                mem[dataIndex] += tots.total;
-        });
+        if (!rowData.unapportioned) {
+            rowData.forEach((tots, dataIndex) => {
+                if (dataIndex != jobData.from.columnIndex)
+                    mem[dataIndex] += tots.total;
+            });
+        }
         return mem;
     }, new Array(data[0].length).fill(0));
     // Helpers.devlog(`New Totals: ${JSON.stringify(apportionedTotals)}`);
 
     var percDiffs = originalTotals.map((orgTotal, colIndex) => {
         var newTotal = apportionedTotals[colIndex];
-        if(orgTotal == 0) {
-            if(newTotal == 0) 
+        if (orgTotal == 0) {
+            if (newTotal == 0)
                 return 0;
-            else 
+            else
                 return Math.abs((newTotal - orgTotal) / newTotal) * 100.0;
         }
         return Math.abs((orgTotal - newTotal) / orgTotal) * 100.0;
     })
-
     // Helpers.devlog(`Mass Balance Diffs: ${JSON.stringify(percDiffs)}`);
 
     var percDiff = percDiffs.find(diff => diff > MASS_BALANCE_TOLLERANCE_PERC);
     if (percDiff) {
         var row = new Array(data[0].length).fill("");
         row[0] = `Warning: The input source values were not completely apportioned to outputs. This happens when the output dataset does not completely cover the input dataset spatially. ${percDiff.toFixed(3)}% of the data was left unassigned.`;
+        var rowText = Papa.unparse([row], { header: false, newline: '\n' });
+        outputStream.write(rowText + "\n");
+    }
+
+    if (hasUnknowns) {
+        var row = new Array(data[0].length).fill("");
+        row[0] = `Warning: Some (or all) of the data was unable to be apportioned. These fields are marked with a question mark and the original value.`;
         var rowText = Papa.unparse([row], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     }
@@ -312,140 +324,31 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
     });
 }
 
-function getStatements(fromUri, isReverse, linksetUri) {
-    var toVar = "?to";
-    var wrappedUri = `<${fromUri}>`;
-    var subjectText = isReverse ? toVar : wrappedUri;
-    var objectText = isReverse ? wrappedUri : toVar;
-    //I feel this query it prone to breaking the second the datasource introduces unexpected relationships
-    //Like unexpected inferred relationships, for example transitiveOvelaps will break it and have to be explicitely removed
-    var query = `PREFIX void: <http://rdfs.org/ns/void#>
-PREFIX loci: <http://linked.data.gov.au/def/loci#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX geox: <http://linked.data.gov.au/def/geox#>
-PREFIX data: <http://linked.data.gov.au/def/datatype/> 
-PREFIX dct: <http://purl.org/dc/terms/>
-prefix dbp: <http://dbpedia.org/property/>
-PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
-PREFIX qu: <http://qudt.org/schema/qudt#unit>
-PREFIX qb4st: <http://www.w3.org/ns/qb4st/>
-PREFIX epsg: <http://www.opengis.net/def/crs/EPSG/0/>
-
-SELECT distinct ?s ?to ?toParent (min(?subjectArea) as ?subjectAreaUnique) (min(?objectArea) as ?objectAreaUnique)
-WHERE {
-    ?s dct:isPartOf <${linksetUri}> ;
-       rdf:subject ${subjectText} ;
-       rdf:predicate ?p;
-       rdf:object ${objectText} .
-    OPTIONAL {
-        ${subjectText} geox:hasAreaM2 [ data:value ?subjectArea; qb4st:crs epsg:3577 ].  
-    }
-    OPTIONAL {
-        ${objectText} geox:hasAreaM2 [ data:value ?objectArea; qb4st:crs epsg:3577 ].  
-    }
-    OPTIONAL { FILTER (?toParent != ${wrappedUri})
-        ?s1 dct:isPartOf <${linksetUri}> ;
-            rdf:subject ?toParent ;
-            rdf:predicate geo:sfContains ;
-            rdf:object ?to .
-    }
-    FILTER (?p = geo:sfContains || ?p = geo:sfWithin)
- } group by ?s ?to ?p ?toParent
-`;
-
+export function getProportionStatements(fromUri, outputType, isCrosswalk = true, isContains = false, isWithin = false) {
     try {
-        // console.log(query)
-        var result = getQueryResults(query);
-        var json = JSON.parse(result.content);
-        var bindings = json.results.bindings;
-        var matches = bindings.map(b => {
-            if (b.toParent) {
-                var matchObj = {
-                    uri: b.toParent.value,
-                }
+        var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/location/overlaps", {
+            params: {
+                uri: fromUri,
+                areas: true,
+                proportion: true,
+                contains: isContains,
+                within: isWithin,
+                crosswalk: isCrosswalk,
+                output_type: outputType.uri,
+                output_dataset: outputType.datasetUri,
+                // count: 1000,
+                // offset: 0
             }
-            else {
-                var matchObj = {
-                    uri: b.to.value
-                }
-            };
-            if (isReverse) {
-                if (b.objectAreaUnique)
-                    matchObj.fromArea = b.objectAreaUnique.value;
-                if (b.subjectAreaUnique)
-                    matchObj.area = b.subjectAreaUnique.value;
-            } else {
-                if (b.subjectAreaUnique)
-                    matchObj.fromArea = b.subjectAreaUnique.value;
-                if (b.objectAreaUnique)
-                    matchObj.area = b.objectAreaUnique.value;
-            }
-            return matchObj;
-        })
-        return matches;
-    } catch (e) {
-        console.log(e)
-        throw e;
-    }
-}
-
-function getOverlapStatements(fromUri, isReverse, predUri, linksetUri) {
-    var filterExp = `${isReverse ? '?obj' : '?sub'} = <${fromUri}>`
-    var query = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX dct: <http://purl.org/dc/terms/>
-prefix dbp: <http://dbpedia.org/property/>
-PREFIX nv: <http://qudt.org/schema/qudt#numericValue>
-PREFIX qu: <http://qudt.org/schema/qudt#unit>
-PREFIX m2: <http://qudt.org/schema/qudt#SquareMeter>
-PREFIX c: <http://www.opengis.net/ont/geosparql#sfContains>
-PREFIX f: <http://www.opengis.net/ont/geosparql#Feature>
-PREFIX l: <${linksetUri}>
-
-SELECT ?sub ?subArea ?subUnit ?obj ?objArea ?objUnit ?intersectArea ?intersectUnit
-WHERE {
-    ?s dct:isPartOf l: ;
-        rdf:subject ?sub;
-        rdf:predicate <${predUri}> ;
-        rdf:object ?obj .
-    ?sub dbp:area [ nv: ?subArea ;
-            qu: ?subUnit ] .
-    ?obj dbp:area [ nv: ?objArea ;
-            qu: ?objUnit ] .    
-    ?intersect a f: ;
-        dbp:area [ nv: ?intersectArea ;
-            qu: ?intersectUnit ] .     
-    ?overlap1 dct:isPartOf l: ;
-        rdf:subject ?sub ;
-        rdf:predicate c: ;
-            rdf:object ?intersect .    
-    ?overlap2 dct:isPartOf l: ;
-        rdf:subject ?obj  ;
-        rdf:predicate c: ;
-            rdf:object ?intersect .
-    FILTER(${filterExp})
-}`;
-
-    try {
-        var result = getQueryResults(query);
+        });
+        console.log(result);
         var json = JSON.parse(result.content);
-        var bindings = json.results.bindings;
-        var matches = bindings.map(b => ({
-            from: {
-                uri: isReverse ? b.obj.value : b.sub.value,
-                unit: isReverse ? b.objUnit.value : b.subUnit.value,
-                area: isReverse ? b.objArea.value : b.subArea.value,
-            },
-            to: {
-                uri: isReverse ? b.sub.value : b.obj.value,
-                unit: isReverse ? b.subUnit.value : b.objUnit.value,
-                area: isReverse ? b.subArea.value : b.objArea.value,
-            },
-            overlap: {
-                unit: b.intersectUnit.value,
-                area: b.intersectArea.value,
-            },
+        var objectArea = +json.meta.featureArea;
+        var outputObjects = json.overlaps;
+
+        var matches = outputObjects.map(outObj => ({
+            uri: outObj.uri,
+            fromArea: +objectArea,
+            area: outObj.intersectionArea != null ? +outObj.intersectionArea : +outObj.featureArea,
         }))
         return matches;
     } catch (e) {

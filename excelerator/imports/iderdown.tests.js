@@ -264,7 +264,8 @@ if (Meteor.isServer) {
                         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
                         "filterUri": DATASETS.gnaf16,
                         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
-                        "idText": ""
+                        "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/NSW3010"
+                        // "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/198330"
                     };
                     var results = await testGetIds(params);
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
@@ -277,7 +278,7 @@ if (Meteor.isServer) {
                         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#Address",
                         "filterUri": DATASETS.gnaf16,
                         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
-                        "idText": ""
+                        "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/streetLocality/NSW2856338"
                     };
                     var results = await testGetIds(params);
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
@@ -290,7 +291,7 @@ if (Meteor.isServer) {
                         "outputTypeUri": "http://linked.data.gov.au/def/gnaf#StreetLocality",
                         "filterUri": DATASETS.gnaf16,
                         "filterTypeUri": "http://linked.data.gov.au/def/gnaf#Locality",
-                        "idText": "http://linked.data.gov.au/dataset/gnaf/locality/ACT328"
+                        "idText": "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/NSW3010"
                     };
                     var results = await testGetIds(params);
                     chai.assert.notEqual(results.data.length, 0, "Should have some results");
