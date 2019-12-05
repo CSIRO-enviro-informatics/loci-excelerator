@@ -157,9 +157,6 @@ export function processData(data, job, outputStream) {
                fromUri = inputType.prefix + fromUri;               
             }
 
-            if (fromUri.indexOf(inputType.datasetUri) == -1)
-                throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${inputType.datasetUri}`);
-
             // The next "if" is totally a hack, URI should not be dependant on their parent URI
             // Ideally check if the statement belongs to the dataset using the graph relationships. It means another query
             // which may or may not be worth it?
