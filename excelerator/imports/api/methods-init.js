@@ -140,6 +140,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "MeshBlock",
                     uri: "http://linked.data.gov.au/def/asgs#MeshBlock",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/meshblock/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
@@ -152,6 +153,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA1",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel1/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
@@ -162,6 +164,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA2",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel2/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
@@ -171,6 +174,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA3",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel3/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
@@ -179,6 +183,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "SA4",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/statisticalarealevel4/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
                     ],
@@ -186,6 +191,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
                     title: "StateOrTerritory",
                     uri: "http://linked.data.gov.au/def/asgs#StateOrTerritory",
+                    prefix: "http://linked.data.gov.au/dataset/asgs2016/stateorterritory/",
                 }];
 
                 var asgs11 = asgs16.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/asgs2011" }));
@@ -194,6 +200,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "Contracted Catchment",
                     uri: "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
+                    prefix: "http://linked.data.gov.au/dataset/geofabric/contractedcatchment/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/geofabric#RiverRegion",
                         "http://linked.data.gov.au/def/geofabric#DrainageDivision"
@@ -203,6 +210,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "River Region",
                     uri: "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                    prefix: "http://linked.data.gov.au/dataset/geofabric/riverregion/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/geofabric#DrainageDivision"
                     ],
@@ -210,12 +218,14 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "Drainage Division",
                     uri: "http://linked.data.gov.au/def/geofabric#DrainageDivision",
+                    prefix: "http://linked.data.gov.au/dataset/geofabric/drainagedivision/"
                 }];
 
                 var gnafCurrent = [{
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
                     title: "Address",
                     uri: "http://linked.data.gov.au/def/gnaf#Address",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf/address/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/gnaf#StreetLocality",
                         "http://linked.data.gov.au/def/gnaf#Locality"
@@ -225,6 +235,7 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
                     title: "Street Locality",
                     uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf/streetLocality/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/gnaf#Locality"
                     ],
@@ -232,9 +243,35 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/gnaf",
                     title: "Locality",
                     uri: "http://linked.data.gov.au/def/gnaf#Locality",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf/locality/"
+                }];
+
+                var gnaf16 = [{
+                    datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05",
+                    title: "Address",
+                    uri: "http://linked.data.gov.au/def/gnaf#Address",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf-2016-05/address/",
+                    withinTypes: [
+                        "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                        "http://linked.data.gov.au/def/gnaf#Locality"
+                    ],
+                    baseType: true,
+                }, {
+                    datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05",
+                    title: "Street Locality",
+                    uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf-2016-05/streetLocality/",
+                    withinTypes: [
+                        "http://linked.data.gov.au/def/gnaf#Locality"
+                    ],
+                }, {
+                    datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05",
+                    title: "Locality",
+                    uri: "http://linked.data.gov.au/def/gnaf#Locality",
+                    prefix: "http://linked.data.gov.au/dataset/gnaf-2016-05/locality/"
                 }]
 
-                var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05" }));
+                //var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05" }));
 
                 var all = [].concat.apply([], [asgs16, asgs11, geofabric, gnafCurrent, gnaf16]);
 
