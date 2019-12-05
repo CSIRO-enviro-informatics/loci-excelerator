@@ -152,8 +152,6 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
 
             //check if fromUri is a URI, else, turn it into a URI based on inputUriType
-            console.log("Classtypeuri: " + jobData.from.classTypeUri);
-            console.log("datasetUri: " + jobData.from.datasetUri);
             if (!fromUri.startsWith("http")) {
                //get prefix from DataType and append fromUri value
                fromUri = inputType.prefix + fromUri;               
