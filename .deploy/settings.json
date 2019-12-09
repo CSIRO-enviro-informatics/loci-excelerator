@@ -14,6 +14,6 @@
     "password": "locireadonly"
   },
   "integrationApi": {
-    "endpoint": "https://api2.loci.cat/api/v1"
+    "endpoint": "http://loci-1.it.csiro.au:32771/api/v1"
   }
 }
