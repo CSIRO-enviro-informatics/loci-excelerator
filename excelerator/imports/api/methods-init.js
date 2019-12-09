@@ -135,11 +135,12 @@ WHERE {
 
                 console.log("Refreshing Datatypes List")
 
-
+                var currDatasetUri = "http://linked.data.gov.au/dataset/asgs2016";
                 var asgs16 = [{
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "MeshBlock",
                     uri: "http://linked.data.gov.au/def/asgs#MeshBlock",
+                    prefix: currDatasetUri + "/meshblock/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
@@ -149,9 +150,10 @@ WHERE {
                     ],
                     baseType: true
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "SA1",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
+                    prefix: currDatasetUri + "/statisticalarealevel1/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
@@ -159,41 +161,51 @@ WHERE {
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "SA2",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
+                    prefix: currDatasetUri + "/statisticalarealevel2/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "SA3",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
+                    prefix: currDatasetUri + "/statisticalarealevel3/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "SA4",
                     uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
+                    prefix: currDatasetUri + "/statisticalarealevel4/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/asgs#StateOrTerritory"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/asgs2016",
+                    datasetUri: currDatasetUri,
                     title: "StateOrTerritory",
                     uri: "http://linked.data.gov.au/def/asgs#StateOrTerritory",
+                    prefix: currDatasetUri + "/stateorterritory/",
                 }];
 
-                var asgs11 = asgs16.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/asgs2011" }));
+                currDatasetUri = "http://linked.data.gov.au/dataset/asgs2011";
+                var asgs11 = asgs16.map(x => Object.assign({}, x, { 
+                    datasetUri: currDatasetUri,
+                    prefix:  `${currDatasetUri}/${x.prefix.split('/').slice(-2)[0]}/`
+                }));
 
+                currDatasetUri = "http://linked.data.gov.au/dataset/geofabric";
                 var geofabric = [{
-                    datasetUri: "http://linked.data.gov.au/dataset/geofabric",
+                    datasetUri: currDatasetUri,
                     title: "Contracted Catchment",
                     uri: "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
+                    prefix: currDatasetUri + "/contractedcatchment/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/geofabric#RiverRegion",
                         "http://linked.data.gov.au/def/geofabric#DrainageDivision"
@@ -203,38 +215,48 @@ WHERE {
                     datasetUri: "http://linked.data.gov.au/dataset/geofabric",
                     title: "River Region",
                     uri: "http://linked.data.gov.au/def/geofabric#RiverRegion",
+                    prefix: currDatasetUri + "/riverregion/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/geofabric#DrainageDivision"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/geofabric",
+                    datasetUri: currDatasetUri,
                     title: "Drainage Division",
                     uri: "http://linked.data.gov.au/def/geofabric#DrainageDivision",
+                    prefix: currDatasetUri + "/drainagedivision/"
                 }];
 
+                currDatasetUri = "http://linked.data.gov.au/dataset/gnaf";
                 var gnafCurrent = [{
-                    datasetUri: "http://linked.data.gov.au/dataset/gnaf",
+                    datasetUri: currDatasetUri,
                     title: "Address",
                     uri: "http://linked.data.gov.au/def/gnaf#Address",
+                    prefix: currDatasetUri + "/address/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/gnaf#StreetLocality",
                         "http://linked.data.gov.au/def/gnaf#Locality"
                     ],
                     baseType: true,
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/gnaf",
+                    datasetUri: currDatasetUri,
                     title: "Street Locality",
                     uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
+                    prefix: currDatasetUri + "/streetLocality/",
                     withinTypes: [
                         "http://linked.data.gov.au/def/gnaf#Locality"
                     ],
                 }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/gnaf",
+                    datasetUri: currDatasetUri,
                     title: "Locality",
                     uri: "http://linked.data.gov.au/def/gnaf#Locality",
-                }]
+                    prefix: currDatasetUri + "/locality/"
+                }];
 
-                var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { datasetUri: "http://linked.data.gov.au/dataset/gnaf-2016-05" }));
+                currDatasetUri = "http://linked.data.gov.au/dataset/gnaf-2016-05";
+                var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { 
+                    datasetUri: currDatasetUri,
+                    prefix:  `${currDatasetUri}/${x.prefix.split('/').slice(-2)[0]}/`
+                }));
 
                 var all = [].concat.apply([], [asgs16, asgs11, geofabric, gnafCurrent, gnaf16]);
 

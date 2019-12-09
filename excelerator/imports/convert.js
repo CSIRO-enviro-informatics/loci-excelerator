@@ -151,6 +151,12 @@ export function processData(data, job, outputStream) {
             if (!fromUri)
                 throw new Meteor.Error(`Undefined uri in row ${i}`);
 
+            //check if fromUri is a URI, else, turn it into a URI based on inputUriType
+            if (!fromUri.startsWith("http")) {
+               //get prefix from DataType and append fromUri value
+               fromUri = inputType.prefix + fromUri;               
+            }
+
             // The next "if" is totally a hack, URI should not be dependant on their parent URI
             // Ideally check if the statement belongs to the dataset using the graph relationships. It means another query
             // which may or may not be worth it?
