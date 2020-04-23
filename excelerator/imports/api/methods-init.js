@@ -22,13 +22,23 @@ WHERE {
 }`;
 
             var datasetQuery =
-                `PREFIX void: <http://rdfs.org/ns/void#>
+                `
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
 PREFIX loci: <http://linked.data.gov.au/def/loci#>
-SELECT * 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?dataset ?pred ?obj
 WHERE {
-    ?dataset a loci:Dataset .
-    ?dataset ?pred ?obj
-}`;
+    {
+        ?dataset a dcat:Dataset .
+        ?dataset ?pred ?obj
+    }
+    UNION
+    {
+        ?dataset a loci:Dataset .
+        ?dataset ?pred ?obj
+    }
+}
+`;
 
 
             try {
