@@ -7,7 +7,6 @@ import { App } from '../../../core.js'
 
 import '../uploadForm/uploadForm'
 import Datasets from '../../../api/datasets/datasets';
-import DatasetTypes from '../../../api/datasetTypes/datasetTypes';
 import Linksets from '../../../api/linksets/linksets';
 import Uploads from '../../../api/uploads/uploads'
 import Jobs from '../../../api/jobs/jobs';
@@ -15,7 +14,6 @@ import Jobs from '../../../api/jobs/jobs';
 window.Linksets = Linksets;
 window.Datasets = Datasets;
 window.Uploads = Uploads;
-window.DatasetTypes = DatasetTypes;
 window.Jobs = Jobs;
 
 Template.jobCreator.onCreated(function () {
@@ -23,7 +21,6 @@ Template.jobCreator.onCreated(function () {
 
     Meteor.subscribe('datasets.all');
     Meteor.subscribe('linksets.all');
-    Meteor.subscribe('datasetTypes.all');
     Meteor.subscribe("jobs.all");
     Tracker.autorun(function () {
         Meteor.subscribe("jobs.id", App.dataId.get());
@@ -88,13 +85,11 @@ Template.jobCreator.events({
                     hasHeaders: build.hasHeaders,
                     from: {
                         fileId: fileObj._id,
-                        classTypeUri: build.params.inputClassUri,
-                        columnIndex: build.params.columnIndex,
-                        datasetUri: build.params.inputDatasetUri,
+                        datasetUri: build.params.inputUri,
+                        columnIndex: build.params.columnIndex
                     },
                     to: {
-                        classTypeUri: build.params.outputClassUri,
-                        datasetUri: build.params.outputDatasetUri,
+                        datasetUri: build.params.outputUri,
                         aggregationFunc: App.Helpers.aggregationMethods.SUM
                     }
                 });

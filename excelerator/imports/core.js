@@ -8,7 +8,6 @@ import Datasets from './api/datasets/datasets';
 import Linksets from './api/linksets/linksets';
 import Papa from 'papaparse';
 import { DATASETS } from './helpers'
-import DatasetTypes from './api/datasetTypes/datasetTypes';
 
 export const EXCEL_ALLOWED = [DATASETS.asgs2016, DATASETS.geofabric, DATASETS.gnaf16];
 
@@ -52,13 +51,8 @@ export const App = {
         var clientSideFileId = Random.id();
         this.files[clientSideFileId] = file;
 
-        function insertBuilder(datasetType) {
-            if(datasetType) {
-                var classTypes = getCompatableDatasetTypes(datasetType);
-                var bases = classTypes.filter(x => x.baseType);
-            } else {
-                bases = [];
-            }
+        function insertBuilder(inputUri) {
+            var datasets = getCompatableDatasets(inputUri);
             JobBuilders.insert({
                 created: new Date(),
                 fileId: clientSideFileId,
@@ -67,17 +61,15 @@ export const App = {
                 hasHeaders: true,
                 params: {
                     columnIndex: 0, //default for now
-                    inputClassUri: datasetType ? datasetType.uri : null,
-                    inputDatasetUri: datasetType ? datasetType.datasetUri : null,
-                    outputClassUri: bases.length == 1 ? bases[0].uri : null,
-                    outputDatasetUri: bases.length == 1 ? bases[0].datasetUri : null
+                    inputUri,
+                    outputUri: datasets.length == 1 ? datasets[0].uri : null
                 },
-                status: bases.length == 1 ? 'ready' : 'incomplete'
+                status: datasets.length == 1 ? 'ready' : 'incomplete'
             })
         }
 
-        guessFileInputDataset(file).then(datasetType => {
-            insertBuilder(datasetType);
+        guessFileInputDataset(file).then(inputUri => {
+            insertBuilder(inputUri);
         }).catch(err => {
             insertBuilder();
         });
@@ -93,10 +85,8 @@ export const App = {
             hasHeaders: job.data.hasHeaders,
             params: {
                 columnIndex: job.data.from.columnIndex,
-                inputClassUri: job.data.from.classTypeUri,
-                inputDatasetUri: job.data.from.datasetUri,
-                outputClassUri: job.data.to.classTypeUri,
-                outputDatasetUri: job.data.to.datasetUri,
+                inputUri: job.data.from.datasetUri,
+                outputUri: job.data.to.datasetUri
             },
             status: 'submitted'
         })
@@ -152,27 +142,15 @@ async function guessFileInputDataset(file) {
             header: false,
             preview: 2,
             complete: function (result, file) {
-                //assuming first column
-                var sampleUri = result.data[1][0];
-                Meteor.call("getObjectDatasetType", sampleUri, (error, result) => {
-                    if(error) {
-                        reject();
-                    } else {
-                        resolve(result);
-                    }
-                })
+                var datasets = Datasets.find({}, { fields: { uri: 1 } }).fetch();
+                var match = datasets.find(x => result.data[1].find(colVal => colVal.indexOf(x.uri) !== -1));
+                if (match) {
+                    resolve(match.uri);
+                }
+                resolve();
             }
         });
     });
-}
-
-export function getCompatableDatasetTypes(datasetType) {
-    var datasets = getCompatableDatasets(datasetType.datasetUri);
-    return DatasetTypes.find({
-        datasetUri: {
-            $in: datasets.map(x => x.uri)
-        }
-    }).fetch();
 }
 
 export function getCompatableDatasets(uri) {

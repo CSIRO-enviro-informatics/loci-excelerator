@@ -142,23 +142,23 @@ if (Meteor.isServer) {
         })
     }
 
-    async function testLinksetConversion(assetPath, datasetFrom, datasetTo) {
+    async function testLinksetConversion(assetPath, classTypeFrom, classTypeTo) {
         var data = await getCSVRows(Assets.absoluteFilePath(assetPath));
-        return await testLinksetConversionWithData(data, datasetFrom, datasetTo);
+        return await testLinksetConversionWithData(data, classTypeFrom, classTypeTo);
     }
 
-    async function testLinksetConversionWithData(data, datasetFrom, datasetTo) {
+    async function testLinksetConversionWithData(data, classTypeFrom, classTypeTo) {
         const outputStream = new streams.WritableStream();
         var mochjob = new MochJob('testid', {
             userId: 'testUser',
             hasHeaders: true,
             from: {
                 fileId: '',
-                datasetUri: datasetFrom,
+                classTypeUri: classTypeFrom,
                 columnIndex: 0
             },
             to: {
-                datasetUri: datasetTo,
+                classTypeUri: classTypeTo,
                 aggregationFunc: Helpers.aggregationMethods.SUM
             }
         });

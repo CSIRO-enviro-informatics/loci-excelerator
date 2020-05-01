@@ -7,41 +7,49 @@
         <div class="size-section">
             <span class="label">{{humanFileSize}}</span>
         </div>
-        <div class="d-flex flex-row align-items-center justify-content-center controls" style="width:415px;">
+        <div class="d-flex flex-row align-items-center justify-content-center" style="width:415px;">
             {{#if error}}
                 <span class="text-danger elipse" title="{{error}}">{{error}}</span>
             {{else}}
                 {{#if building}}
-                <span class="label mr-1">from</span>
-                <div class="dropdown">
-                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                        class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
-                        <span class="small">
-                            {{inputLabel}}
-                        </span>
-                    </button>
-                    <div class="dropdown-menu">
-                        {{#each datasetTypes}}
-                            <a class="input-select dropdown-item {{isActive ../params.inputUri uri}}"
-                                href="#">{{datasetTypeTitle}}</a>
-                        {{/each}}
+                    <div class="from-section">
+                        <div class="d-flex flex-row align-items-center">
+                            <span class="label mr-1">from</span>
+                            <div class="dropdown">
+                                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                    class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
+                                    <span class="small">
+                                        {{inputLabel}}
+                                    </span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    {{#each datasets}}
+                                        <a class="input-select dropdown-item {{isActive ../params.inputUri uri}}"
+                                            href="#">{{title}}</a>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <span class="label mr-1">to</span>
-                <div class="dropdown">
-                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                        class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
-                        <span class="small">
-                            {{outputLabel}}
-                        </span>
-                    </button>
-                    <div class="dropdown-menu">
-                        {{#each availableOutputs}}
-                            <a class="output-select dropdown-item {{isActive ../params.outputUri uri}}"
-                                href="#">{{datasetTypeTitle}}</a>
-                        {{/each}}
+                    <div class="to-section">
+                        <div class="d-flex flex-row align-items-center">
+                            <span class="label mr-1">to</span>
+                            <div class="dropdown">
+                                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                    class="btn btn-sm btn-caret btn-outline-secondary text-uppercase dropdown-toggle">
+                                    <span class="small">
+                                        {{outputLabel}}
+                                    </span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    {{#each availableOutputs}}
+                                        <a class="output-select dropdown-item {{isActive ../params.outputUri uri}}"
+                                            href="#">{{title}}</a>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
                 {{/if}}
                 {{#with uploader}}
                     <div class="progress progress-bar-striped progress-bar-animated mx-auto" style="width: 200px">

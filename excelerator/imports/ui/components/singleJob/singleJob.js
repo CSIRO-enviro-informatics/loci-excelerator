@@ -3,10 +3,9 @@ import '../uploadForm/fileDetails';
 
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { App, getCompatableDatasetTypes, EXCEL_ALLOWED } from '../../../core.js'
+import { App, getCompatableDatasets, EXCEL_ALLOWED } from '../../../core.js'
 
 import '../uploadForm/uploadForm'
-import DatasetTypes from '../../../api/datasetTypes/datasetTypes';
 import Datasets from '../../../api/datasets/datasets';
 import Linksets from '../../../api/linksets/linksets';
 import Uploads from '../../../api/uploads/uploads'
@@ -20,21 +19,13 @@ Template.singleJob.onCreated(function () {
     tpl.currentJobId = new ReactiveVar();
 });
 
-function formatName(datasetType) {
-    var dset = Datasets.findOne({uri: datasetType.datasetUri});
-    return `${dset.title.toUpperCase()} - ${datasetType.title}`;
-}
-
 Template.singleJob.helpers({
     humanFileSize() {
         return App.humanFileSize(this.fileSize);
     },
-    datasetTypes() {
+    datasets() {
         //hack to limit dataset
-        return DatasetTypes.find({ datasetUri: { $in: EXCEL_ALLOWED } }, { sort: { datasetUri: 1, title: 1 } });
-    },
-    datasetTypeTitle() {
-        return formatName(this);
+        return Datasets.find({ uri: { $in: EXCEL_ALLOWED } }, { sort: { title: 1 } });
     },
     status() {
         var job = Jobs.findOne({ _id: this.jobId });
@@ -63,21 +54,20 @@ Template.singleJob.helpers({
         }
     },
     inputLabel() {
-        var input = DatasetTypes.findOne({ uri: this.params.inputClassUri, datasetUri: this.params.inputDatasetUri });
-        return input ? input.title : "Unknown";
+        var input = Datasets.findOne({ uri: this.params.inputUri });
+        return input && EXCEL_ALLOWED.includes(this.params.inputUri) ? input.title : "Unknown";
     },
     isActive(a, b) {
         return a == b ? "active" : "";
     },
     outputLabel() {
-        var output = DatasetTypes.findOne({ uri: this.params.outputClassUri, datasetUri: this.params.outputDatasetUri});
-        return output ? output.title : "Unknown";
+        var output = Datasets.findOne({ uri: this.params.outputUri });
+        return output && EXCEL_ALLOWED.includes(this.params.inputUri) ? output.title : "Unknown";
     },
     availableOutputs() {
         var params = this.params;
-        if (params && params.inputClassUri) {
-            var type = DatasetTypes.findOne({ uri: params.inputClassUri, datasetUri: params.inputDatasetUri });
-            return getCompatableDatasetTypes(type);
+        if (params && params.inputUri) {
+            return getCompatableDatasets(params.inputUri);
         }
     },
     building() {
@@ -117,21 +107,18 @@ Template.singleJob.events({
     'click .input-select': function (e, t) {
         e.preventDefault();
         var build = Template.currentData();
-        build.params.inputClassUri = this.uri;
-        build.params.inputDatasetUri = this.datasetUri;
-        var available = getCompatableDatasetTypes(this);
+        build.params.inputUri = this.uri;
+        var available = getCompatableDatasets(this.uri);
         if(available.length == 1) {
-            build.params.outputClassUri = available[0].uri;
-            build.params.outputDatasetUri = available[0].datasetUri;
+            build.params.outputUri = available[0].uri;
         } else {
-            delete build.params.outputClassUri;
-            delete build.params.outputDatasetUri;
+            delete build.params.outputUri;
         }
 
         App.JobBuilders.update(build._id, {
             $set: {
                 params: build.params,
-                status: build.params.outputClassUri ? 'ready' : 'incomplete'
+                status: build.params.outputUri ? 'ready' : 'incomplete'
             }
         });
     },
@@ -140,8 +127,7 @@ Template.singleJob.events({
         var build = Template.currentData();
         App.JobBuilders.update(build._id, {
             $set: {
-                "params.outputClassUri": this.uri,
-                "params.outputDatasetUri": this.datasetUri,
+                "params.outputUri": this.uri,
                 status: "ready"
             }
         });

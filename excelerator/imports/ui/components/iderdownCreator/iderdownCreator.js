@@ -82,7 +82,6 @@ Template.iderdownForm.helpers({
     filterDatasets() {
         var params = this.params;
         if (params && params.outputUri) {
-            //Otheriwse use linksets
             var uri = params.outputUri;
             var datasetsUris = new Set();
             Linksets.find({
@@ -95,12 +94,6 @@ Template.iderdownForm.helpers({
                 datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
             })
             datasetsUris.add(uri); //add self as we can convert internally
-
-            if (params.outputUri != DATASETS.gnaf)
-                datasetsUris.delete(DATASETS.gnaf);
-            if (params.outputUri != DATASETS.gnaf16)
-                datasetsUris.delete(DATASETS.gnaf16);
-
             return Datasets.find({
                 uri: { $in: Array.from(datasetsUris) }
             }, { sort: { title: 1 } });
@@ -118,10 +111,8 @@ Template.iderdownForm.helpers({
         return DatasetTypes.find({ datasetUri: this.params.filterUri });
     },
     isFilterSubTypeDisabled(params, filterTypeUri) {
-        if (params.outputUri == params.filterUri) {
-            var outputTypeUri = DatasetTypes.findOne({ uri: params.outputTypeUri });
-            return outputTypeUri.withinTypes.indexOf(filterTypeUri) == -1 ? "disabled" : "";
-        }
+        var outputTypeUri = DatasetTypes.findOne({ uri: params.outputTypeUri });
+        return outputTypeUri.withinTypes.indexOf(filterTypeUri) == -1 ? "disabled" : "";
     },
     isActive(a, b) {
         return a == b ? "active" : "";
@@ -147,13 +138,9 @@ Template.iderdownForm.events({
         var outputType = DatasetTypes.findOne({ datasetUri: this.uri });
         data.params.outputTypeUri = outputType.uri; //select first
 
-        if (data.params.outputUri != DATASETS.gnaf && data.params.outputUri != DATASETS.gnaf16) {
-            //if not gnaf, clear out filter type.
-            if (data.params.filterUri == DATASETS.gnaf || data.params.filterUri == DATASETS.gnaf16) {
-                data.params.filterUri = data.params.outputUri;
-                data.params.filterTypeUri = DatasetTypes.findOne({ uri: data.params.outputTypeUri }).withinTypes[0]; //select first
-            }
-        }
+        //set filter too, while we are not using the linksets
+        data.params.filterUri = this.uri;
+        data.params.filterTypeUri = outputType.withinTypes[0];
 
         t.formState.set(data);
     },
@@ -161,26 +148,17 @@ Template.iderdownForm.events({
         e.preventDefault();
         var data = t.formState.get()
         data.params.outputTypeUri = this.uri;
-        if (data.params.outputUri == data.params.filterUri) {
-            var outputType = DatasetTypes.findOne({ uri: this.uri });
-            data.params.filterTypeUri = outputType.withinTypes[0];
-        }
+        var outputType = DatasetTypes.findOne({ uri: this.uri });
+        data.params.filterTypeUri = outputType.withinTypes[0];
         t.formState.set(data);
     },
-    'click .filter-select': function (e, t) {
-        e.preventDefault();
-        var data = t.formState.get()
-        data.params.filterUri = this.uri;
-
-        if (data.params.outputUri == data.params.filterUri) {
-            var outputType = DatasetTypes.findOne({ uri: data.params.outputTypeUri });
-            data.params.filterTypeUri = outputType.withinTypes[0];
-        } else {
-            data.params.filterTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
-        }
-
-        t.formState.set(data);
-    },
+    // 'click .filter-select': function (e, t) {
+    //     e.preventDefault();
+    //     var data = t.formState.get()
+    //     data.params.filterUri = this.uri;
+    //     data.params.filterTypeUri = DatasetTypes.findOne({ datasetUri: this.uri }).uri; //select first
+    //     t.formState.set(data);
+    // },
     'click .filter-sub-type-select': function (e, t) {
         e.preventDefault();
         var data = t.formState.get()
