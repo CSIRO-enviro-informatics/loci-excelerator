@@ -332,7 +332,7 @@ function addToCache(dataCache, toUri, row, i, jobData, valFunc) {
 
 export function getProportionStatements(fromUri, outputType, isCrosswalk = true, isContains = false, isWithin = false) {
     try {
-        var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/location/overlaps", {
+        var options = {
             params: {
                 uri: fromUri,
                 areas: true,
@@ -345,8 +345,11 @@ export function getProportionStatements(fromUri, outputType, isCrosswalk = true,
                 // count: 1000,
                 // offset: 0
             }
-        });
-        console.log(result);
+        }
+        // console.log(options);
+
+        var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/location/overlaps", options);
+        // console.log(result);
         var json = JSON.parse(result.content);
         var objectArea = +json.meta.featureArea;
         var outputObjects = json.overlaps;
@@ -359,6 +362,6 @@ export function getProportionStatements(fromUri, outputType, isCrosswalk = true,
         return matches;
     } catch (e) {
         console.log(e)
-        throw e;
+        throw new Error(`Call to API endpoint failed with: ${e.message}`);
     }
 }
