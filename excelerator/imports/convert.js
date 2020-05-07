@@ -121,7 +121,7 @@ export function processData(data, job, outputStream) {
         linkset = Linksets.findOne({ subjectsTarget: outputType.datasetUri, objectsTarget: inputType.datasetUri });
     }
 
-    if (!linkset) {
+    if (outputType.datasetUri != inputType.datasetUri && !linkset) {
         throw new Meteor.Error(`No linkset exists to map these datasets ${inputType.datasetUri} --> ${outputType.datasetUri}`);
     }
 
