@@ -106,14 +106,14 @@ export function convert(job, cb) {
 export function processData(data, job, outputStream) {
     var jobData = job.data;
 
-    var outputType = DatasetTypes.findOne({uri: jobData.to.classTypeUri, datasetUri: jobData.to.datasetUri});
-    if(!outputType)
+    var outputType = DatasetTypes.findOne({ uri: jobData.to.classTypeUri, datasetUri: jobData.to.datasetUri });
+    if (!outputType)
         throw new Meteor.Error(`There is no classtype defined by ${jobData.to.classTypeUri}`);
 
-    var inputType = DatasetTypes.findOne({uri: jobData.from.classTypeUri, datasetUri: jobData.from.datasetUri});
-    if(!inputType)
+    var inputType = DatasetTypes.findOne({ uri: jobData.from.classTypeUri, datasetUri: jobData.from.datasetUri });
+    if (!inputType)
         throw new Meteor.Error(`There is no classtype defined by ${jobData.from.classTypeUri}`);
-    
+
     var linkset = Linksets.findOne({ subjectsTarget: inputType.datasetUri, objectsTarget: outputType.datasetUri });
     var isReverse = false; //is the dataset going from subject to object
     if (!linkset) {
@@ -144,7 +144,7 @@ export function processData(data, job, outputStream) {
                 throw new Meteor.Error(`Prototype Constrained Timeout: Runtime exceeded (${Meteor.settings.public.jobTimeoutMins} mins)`);
             }
         }
-        predicateSuccess = false;
+
         if (!(jobData.hasHeaders && i == 0)) {
             var fromUri = row[jobData.from.columnIndex];
             // Helpers.devlog(`Row: ${i} of ${data.length}, ${fromUri}`)
@@ -153,8 +153,8 @@ export function processData(data, job, outputStream) {
 
             //check if fromUri is a URI, else, turn it into a URI based on inputUriType
             if (!fromUri.startsWith("http")) {
-               //get prefix from DataType and append fromUri value
-               fromUri = inputType.prefix + fromUri;               
+                //get prefix from DataType and append fromUri value
+                fromUri = inputType.prefix + fromUri;
             }
 
             // The next "if" is totally a hack, URI should not be dependant on their parent URI
@@ -163,32 +163,35 @@ export function processData(data, job, outputStream) {
             if (fromUri.indexOf(inputType.datasetUri) == -1)
                 throw new Meteor.Error(`Input data in row ${i} ${fromUri} doesn't appear to be part of the designated FROM dataset ${inputType.datasetUri}`);
 
-            var toObjects = getProportionStatements(fromUri, outputType);
+            try {
+                var toObjects = getProportionStatements(fromUri, outputType);
 
-            if (toObjects.length != 0) {
-                predicateSuccess = true;
-                var hasToAreas = toObjects.every(toObj => !!toObj.area);
-                var hasFromAreas = toObjects.every(toObj => !!toObj.fromArea);
+                if (toObjects.length != 0) {
+                    var hasToAreas = toObjects.every(toObj => !!toObj.area);
+                    var hasFromAreas = toObjects.every(toObj => !!toObj.fromArea);
 
-                toObjects.forEach(toObj => {
-                    prepareCache(dataCache, toObj.uri, row, jobData);
-                    if (hasToAreas) {
-                        var proportionToGive = hasFromAreas ? toObj.area / toObj.fromArea : 1;
-                        //Never distribute more than the amount that the from object has to give
-                        //The area of the two objects is only ever greater in the circumstance of a within, so really
-                        //this test is for the presence of a within statement, in which case we want to fully allocate the
-                        //value to the target.
-                        if (proportionToGive > 1)
-                            proportionToGive = 1;
-                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val * proportionToGive);
-                    } else {
-                        addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
-                        dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
-                    }
-                });
+                    toObjects.forEach(toObj => {
+                        prepareCache(dataCache, toObj.uri, row, jobData);
+                        if (hasToAreas) {
+                            var proportionToGive = hasFromAreas ? toObj.area / toObj.fromArea : 1;
+                            //Never distribute more than the amount that the from object has to give
+                            //The area of the two objects is only ever greater in the circumstance of a within, so really
+                            //this test is for the presence of a within statement, in which case we want to fully allocate the
+                            //value to the target.
+                            if (proportionToGive > 1)
+                                proportionToGive = 1;
+                            addToCache(dataCache, toObj.uri, row, i, jobData, val => val * proportionToGive);
+                        } else {
+                            addToCache(dataCache, toObj.uri, row, i, jobData, val => val);
+                            dataCache[toObj.uri].unapportioned = fromUri; //flags as dont know what to do
+                        }
+                    });
+                } else {
+                    skipped.push(row); //this row had no matches
+                }
             }
-            if (!predicateSuccess) {
-                skipped.push(row); //this row had no matches
+            catch (e) {
+                skipped.push(row); //An error meant this row was skipped
             }
         }
     })
@@ -201,7 +204,7 @@ export function processData(data, job, outputStream) {
     if (jobData.hasHeaders) {
         var headerRow = data[0];
         headerRow[jobData.from.columnIndex] = outputType.title;
-        if (hasUnknowns) {
+        if (hasUnknowns || skipped.length != 0) {
             headerRow.push("Originating URI");
         }
         var rowText = Papa.unparse([headerRow], { header: false, newline: '\n' });
@@ -256,9 +259,29 @@ export function processData(data, job, outputStream) {
 
     if (hasUnknowns) {
         var row = new Array(data[0].length).fill("");
-        row[0] = `Warning: Some (or all) of the data was unable to be apportioned. These fields are marked with a question mark and the original value.`;
+        row[0] = `Warning: Some (or all) of the data was unable to be apportioned (lack of area information). These fields are marked with a question mark and the original value.`;
         var rowText = Papa.unparse([row], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
+    }
+
+    if (skipped.length != 0) {
+        var row = new Array(data[0].length).fill("");
+        row[0] = `Warning: Some (or all) of the data was unable to be apportioned (no corresponding overlaps). They are listed below to show which data was NOT included in the apportionment.`;
+        var rowText = Papa.unparse([row], { header: false, newline: '\n' });
+        outputStream.write(rowText + "\n");
+
+        skipped.forEach((skippedRow, i) => {
+            var fromUri = skippedRow[jobData.from.columnIndex];
+            if (!fromUri.startsWith("http")) {
+                fromUri = inputType.prefix + fromUri;
+            }
+            var rowData = skippedRow.slice(); //clone
+            rowData[jobData.from.columnIndex] = `Unapportioned: ${fromUri}`;
+            rowData.push(fromUri); //should match up to "original" header
+
+            var rowText = Papa.unparse([rowData], { header: false, newline: '\n' });
+            outputStream.write(rowText + "\n");                
+        })
     }
 
     //write the data rows
@@ -361,7 +384,7 @@ export function getProportionStatements(fromUri, outputType, isCrosswalk = true,
         }))
         return matches;
     } catch (e) {
-        console.log(e)
+        // console.log(e)
         throw new Error(`Call to API endpoint failed with: ${e.message}`);
     }
 }
