@@ -47,3 +47,10 @@ The deployment is managed via docker with the following volumes on the host:
 - `/opt/mongo` The storage for the database data
 - `/opt/data/uploads` The location for the uploaded files from the meteor application
 
+# Testing 
+The methods for writting test are described at https://guide.meteor.com/testing.html#unit-testing
+Also see https://atmospherejs.com/meteortesting/mocha for more information on variable used to teh run the scripts
+
+The basic commands for running the tests that I have setup so far are: 
+
+TEST_WATCH=1 MOCHA_GREP=IDerDown meteor test --settings=settings.json --driver-package meteortesting:mocha

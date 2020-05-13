@@ -186,6 +186,9 @@ export function getCompatableDatasets(uri) {
     }).forEach(ls => {
         datasetsUris.add(ls.objectsTarget == uri ? ls.subjectsTarget : ls.objectsTarget);
     })
+    //Allow excelerator to covert within the same dataset
+    datasetsUris.add(uri);
+
     var allowed = Array.from(datasetsUris).filter(x => EXCEL_ALLOWED.includes(x));
     return Datasets.find({ uri: { $in: allowed } }, { sort: { title: 1 } }).fetch();
 }

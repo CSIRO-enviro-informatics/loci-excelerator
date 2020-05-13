@@ -1,6 +1,7 @@
 // Methods related to links
 
 import { Meteor } from 'meteor/meteor';
+import { HTTP } from 'meteor/http'
 import { getQueryResults, PROPS } from '../linksetApi'
 import Helpers from '../helpers'
 import Linkset from './linksets/linksets'
@@ -76,13 +77,13 @@ WHERE {
                         console.log(lsprops[0].linkset.value);
                     }
                 })
-                
+
 
                 var result = getQueryResults(datasetQuery);
                 var json = JSON.parse(result.content);
                 var bindings = json.results.bindings;
                 var datasets = Helpers.groupBy(bindings, row => row['dataset'].value);
-                
+
                 Dataset.remove({});
                 datasets.forEach(dsprops => {
                     try {
@@ -91,7 +92,7 @@ WHERE {
                             // title: dsprops.find(x => x.pred.value == PROPS.label).obj.value, //sometime more than one
                         }
 
-                        if(!datasetObj.title) {
+                        if (!datasetObj.title) {
                             datasetObj.title = datasetObj.uri.split('/').pop();
                         }
 
@@ -110,169 +111,34 @@ WHERE {
                 console.log("Error reading the linksets/datasets from the DB. Probably missing data in DB");
                 console.log(e);
             }
-        } 
+        }
     },
     updateDatasetTypes() {
         if (!this.isSimulation) {
             this.unblock();
-            DatasetTypes.remove({});
+            DatasetTypes.remove({}); // clear list
             if (!DatasetTypes.findOne()) {
-                //predcate are assumed uri isWithin parentUri, unless revesePredicate is true.
-                //                 var typesQuery =
-                //                     `PREFIX reg: <http://purl.org/linked-data/registry#>
-                // SELECT *
-                // WHERE {
-                //     ?reg a reg:Register ;
-                //             reg:register ?rofr ;
-                //             reg:containedItemClass ?cic
-                // }`;
-                //                 try {
-                //                     var result = getQueryResults(typesQuery);
-                //                     var json = JSON.parse(result.content);
-                //                     var bindings = json.results.bindings;
-                //                     var types = bingings.map(b => {
-                //                         var uri = b['cic'].value;
-                //                         return {
-                //                             uri,
-                //                             title: uri.split(/[#/]+/).pop(),
-                //                             datasetUri: b['rofr'].value
-                //                         }
-                //                     })
-                //                 } catch (e) {
-                //                     console.log(e)
-                //                     return false;
-                //                 }
-
                 console.log("Refreshing Datatypes List")
+                try {
+                    var result = HTTP.get(Meteor.settings.integrationApi.endpoint + "/dataset/type", {
+                        params: {
+                            // datasetUri: "",
+                            // type: "",
+                            basetype: false,
+                            // count: 1000,
+                            // offset: 0
+                        }
+                    });
 
-                var currDatasetUri = "http://linked.data.gov.au/dataset/asgs2016";
-                var asgs16 = [{
-                    datasetUri: currDatasetUri,
-                    title: "MeshBlock",
-                    uri: "http://linked.data.gov.au/def/asgs#MeshBlock",
-                    prefix: currDatasetUri + "/meshblock/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
-                        "http://linked.data.gov.au/def/asgs#StateOrTerritory"
-                    ],
-                    baseType: true
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "SA1",
-                    uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel1",
-                    prefix: currDatasetUri + "/statisticalarealevel1/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
-                        "http://linked.data.gov.au/def/asgs#StateOrTerritory"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "SA2",
-                    uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel2",
-                    prefix: currDatasetUri + "/statisticalarealevel2/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
-                        "http://linked.data.gov.au/def/asgs#StateOrTerritory"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "SA3",
-                    uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel3",
-                    prefix: currDatasetUri + "/statisticalarealevel3/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
-                        "http://linked.data.gov.au/def/asgs#StateOrTerritory"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "SA4",
-                    uri: "http://linked.data.gov.au/def/asgs#StatisticalAreaLevel4",
-                    prefix: currDatasetUri + "/statisticalarealevel4/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/asgs#StateOrTerritory"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "StateOrTerritory",
-                    uri: "http://linked.data.gov.au/def/asgs#StateOrTerritory",
-                    prefix: currDatasetUri + "/stateorterritory/",
-                }];
+                    var json = JSON.parse(result.content);
 
-                currDatasetUri = "http://linked.data.gov.au/dataset/asgs2011";
-                var asgs11 = asgs16.map(x => Object.assign({}, x, { 
-                    datasetUri: currDatasetUri,
-                    prefix:  `${currDatasetUri}/${x.prefix.split('/').slice(-2)[0]}/`
-                }));
-
-                currDatasetUri = "http://linked.data.gov.au/dataset/geofabric";
-                var geofabric = [{
-                    datasetUri: currDatasetUri,
-                    title: "Contracted Catchment",
-                    uri: "http://linked.data.gov.au/def/geofabric#ContractedCatchment",
-                    prefix: currDatasetUri + "/contractedcatchment/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/geofabric#RiverRegion",
-                        "http://linked.data.gov.au/def/geofabric#DrainageDivision"
-                    ],
-                    baseType: true
-                }, {
-                    datasetUri: "http://linked.data.gov.au/dataset/geofabric",
-                    title: "River Region",
-                    uri: "http://linked.data.gov.au/def/geofabric#RiverRegion",
-                    prefix: currDatasetUri + "/riverregion/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/geofabric#DrainageDivision"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "Drainage Division",
-                    uri: "http://linked.data.gov.au/def/geofabric#DrainageDivision",
-                    prefix: currDatasetUri + "/drainagedivision/"
-                }];
-
-                currDatasetUri = "http://linked.data.gov.au/dataset/gnaf";
-                var gnafCurrent = [{
-                    datasetUri: currDatasetUri,
-                    title: "Address",
-                    uri: "http://linked.data.gov.au/def/gnaf#Address",
-                    prefix: currDatasetUri + "/address/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/gnaf#StreetLocality",
-                        "http://linked.data.gov.au/def/gnaf#Locality"
-                    ],
-                    baseType: true,
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "Street Locality",
-                    uri: "http://linked.data.gov.au/def/gnaf#StreetLocality",
-                    prefix: currDatasetUri + "/streetLocality/",
-                    withinTypes: [
-                        "http://linked.data.gov.au/def/gnaf#Locality"
-                    ],
-                }, {
-                    datasetUri: currDatasetUri,
-                    title: "Locality",
-                    uri: "http://linked.data.gov.au/def/gnaf#Locality",
-                    prefix: currDatasetUri + "/locality/"
-                }];
-
-                currDatasetUri = "http://linked.data.gov.au/dataset/gnaf-2016-05";
-                var gnaf16 = gnafCurrent.map(x => Object.assign({}, x, { 
-                    datasetUri: currDatasetUri,
-                    prefix:  `${currDatasetUri}/${x.prefix.split('/').slice(-2)[0]}/`
-                }));
-
-                var all = [].concat.apply([], [asgs16, asgs11, geofabric, gnafCurrent, gnaf16]);
-
-                all.forEach(x => {
-                    DatasetTypes.insert(x);
-                })
+                    json.datasets.forEach(x => {
+                        DatasetTypes.insert(x);
+                    })
+                } catch (e) {
+                    console.error("Failed to get dataset types from API endpoint")
+                    console.log(e);
+                }
             }
         }
     }
