@@ -6,7 +6,7 @@
       "maxSizeText": "100MB",
       "path": "/files"
     },
-    "jobTimeoutMins": 10
+    "jobTimeoutMins": 0
   },
   "graphdb": {
     "sparqlEndpoint": "http://db.loci.cat/repositories/loci-cache",
