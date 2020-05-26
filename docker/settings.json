@@ -1,0 +1,19 @@
+{
+  "public": {
+    "siteName": "Excelerator",
+    "uploads": {
+      "maxSize": 104857600,
+      "maxSizeText": "100MB",
+      "path": "/files"
+    },
+    "jobTimeoutMins": 0
+  },
+  "graphdb": {
+    "sparqlEndpoint": "http://db.loci.cat/repositories/loci-cache",
+    "user": "ro",
+    "password": "locireadonly"
+  },
+  "integrationApi": {
+    "endpoint": "https://api2.loci.cat/api/v1"
+  }
+}
