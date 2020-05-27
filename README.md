@@ -30,7 +30,7 @@ We have a simple job managed with a single worker integrated into the meteor ser
 ** Incomplete ** 
 It would be nice to have this service accessible via a restful API to integrate into other applications.
 
-# Deployment
+# Deployment (dev/internal)
 Deployment is managed via Meteor Up. An application to bundle and configure meteor application on remote servers.
 
 The deployment are triggered from push to certain branches in the repository. Simply merge in master to the deployment branch of your choice and within 15 minutes the jenkins server (https://bigbrother.it.csiro.au:9443) should have worked out there are changes and started deployment.
@@ -46,6 +46,16 @@ The keys to the EC2 instance are added as a secretFile in the jenkins instance a
 The deployment is managed via docker with the following volumes on the host:
 - `/opt/mongo` The storage for the database data
 - `/opt/data/uploads` The location for the uploaded files from the meteor application
+
+# Deployment (Docker)
+We also provide a docker container that is capable of running the application.
+
+One of the main considerations is that uploaded files will be put in the `/files` directory in the container. It is currently mapped to named volume (stored on the host machine) so the container itself doesn't grow too big, and the files will be persisted between deployments. You may wish to remap this volume to somewhere else.
+
+To stand up an instance of the application, simply run `docker-compose up` from the `/docker` directory.
+
+It will spin up two containers, mongo, and a nodejs container running the web app.
+
 
 # Testing 
 The methods for writting test are described at https://guide.meteor.com/testing.html#unit-testing
