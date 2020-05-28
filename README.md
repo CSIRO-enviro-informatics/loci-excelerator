@@ -56,6 +56,21 @@ To stand up an instance of the application, simply run `docker-compose up` from 
 
 It will spin up two containers, mongo, and a nodejs container running the web app.
 
+## Use docker hub images
+
+To stand up an instance of the application using a pre-built image, run:
+```
+$ cd docker/
+$ docker-compose -f docker-compose -f docker-compose.useimages.yml up -d
+```
+
+## Pointing to other instances of the Loc-I Cache and Loc-I integrated api
+
+To point Excelerator to different instances of the Loc-I Cache and the Loc-I integrated API,
+simply edit the `settings.json` file in the `graphdb` and `integrationApi` sections of that 
+file.
+
+Once the file is edited, redeploy using docker.
 
 # Testing 
 The methods for writting test are described at https://guide.meteor.com/testing.html#unit-testing
