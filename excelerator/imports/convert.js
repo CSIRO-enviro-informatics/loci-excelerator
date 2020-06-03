@@ -208,6 +208,7 @@ export function processData(data, job, outputStream) {
         if (hasUnknowns || skipped.length != 0) {
             headerRow.push("Originating URI");
         }
+        headerRow.push("Local ID");
         var rowText = Papa.unparse([headerRow], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
     }
@@ -311,6 +312,9 @@ export function processData(data, job, outputStream) {
         }
 
         rowValues[jobData.from.columnIndex] = toUri;
+        var localID = toUri.substring(toUri.lastIndexOf('/') + 1);
+        rowValues.push(localID);
+        console.log(rowValues);
 
         var rowText = Papa.unparse([rowValues], { header: false, newline: '\n' });
         outputStream.write(rowText + "\n");
