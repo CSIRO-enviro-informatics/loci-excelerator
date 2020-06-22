@@ -4,7 +4,7 @@ services:
   app:
     image: csiroenvinf/loci-excelerator:latest
     ports:
-      - '8888:3000'
+      - "${PORT:-80}:3000"
     depends_on:
       - mongo
     environment:
@@ -13,6 +13,7 @@ services:
       PORT: 3000
     volumes:
       - files:/files
+      - ./settings.json:/opt/bundle/bundle/settings.json
   
   mongo:
     image: mongo:latest
