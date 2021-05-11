@@ -15,7 +15,7 @@
     "jquery": "^3.4.1",
     "memory-streams": "^0.1.3",
     "meteor-node-stubs": "^0.4.1",
-    "papaparse": "^4.6.3",
+    "papaparse": "^5.2.0",
     "popper.js": "^1.15.0",
     "startbootstrap-sb-admin-2": "^4.0.3"
   },
