@@ -35,8 +35,21 @@ Deployment is managed via Meteor Up. An application to bundle and configure mete
 
 The deployment are triggered from push to certain branches in the repository. Simply merge in master to the deployment branch of your choice and within 15 minutes the jenkins server (https://bigbrother.it.csiro.au:9443) should have worked out there are changes and started deployment.
 
+## Local development/deployment via Meteor
+
+Install meteorJs via https://www.meteor.com/developers/install
+
+```
+$ cd loci-excelerator
+$ cd excelerator
+$ meteor npm install
+$ meteor --settings settings.json
+```
+
+Excelerator can now be accessed via `http://localhost:3000`
+
 ## Dev / Staging
-At this stage we only have prod deployement stage.
+At this stage we only have prod deployment stage.
 
 ## Production
 Deployment is initiated via a commit to the prod_deploy branch. 
