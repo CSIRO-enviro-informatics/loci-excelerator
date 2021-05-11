@@ -39,6 +39,8 @@ The deployment are triggered from push to certain branches in the repository. Si
 
 Install meteorJs via https://www.meteor.com/developers/install
 
+Edit the `public.uploads.path` property in the `settings.json` file to point to a valid local file directory.
+
 ```
 $ cd loci-excelerator
 $ cd excelerator
